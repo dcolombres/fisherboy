@@ -36,6 +36,16 @@ const store = createStore({
       cheatCode: '', // Cadena para registrar la entrada de trucos.
       MONEY_CHEAT: 'money', // El código de truco para obtener dinero.
       messages: [], // Array para almacenar los mensajes de la consola.
+      fishingRods: [
+        { name: "Caña Básica", power: 1, speed: 1, catchRate: 0.6, price: 0 },
+        { name: "Caña Profesional", power: 1.5, speed: 1.3, catchRate: 0.75, price: 5000 },
+        { name: "Caña Maestra", power: 2, speed: 1.6, catchRate: 0.9, price: 20000 }
+      ],
+      boats: [
+        { name: "Barco Básico", speedMultiplier: 1, catchBonus: 1, price: 0, image: 'https://moroarte.com/games/boat.png' },
+        { name: "Barco Avanzado", speedMultiplier: 1.5, catchBonus: 1.2, price: 25000, image: 'https://moroarte.com/games/botelvl1.png' },
+        { name: "Barco Profesional", speedMultiplier: 2, catchBonus: 1.5, price: 150000, image: 'https://moroarte.com/games/botelvl2.png' }
+      ],
     };
   },
   mutations: {
@@ -170,6 +180,44 @@ const store = createStore({
     // Acción para añadir un mensaje a la consola
     addMessage({ commit }, messagePayload) {
       commit('addMessage', messagePayload);
+    },
+    selectRod({ commit, state }, rodIndex) {
+      const rod = state.fishingRods[rodIndex];
+      if (!state.unlockedRods[rodIndex]) {
+        if (state.money >= rod.price) {
+          if (confirm(`¿Quieres comprar la ${rod.name} por ${rod.price}?`)) {
+            commit('spendMoney', rod.price);
+            let newUnlockedRods = [...state.unlockedRods];
+            newUnlockedRods[rodIndex] = true;
+            commit('setUnlockedRods', newUnlockedRods);
+            commit('addMessage', { message: `¡Has comprado la ${rod.name}!`, type: 'achievement' });
+          }
+        } else {
+          commit('addMessage', { message: `Necesitas ${rod.price} para comprar esta caña`, type: 'warning' });
+        }
+      } else {
+        commit('setCurrentRod', rodIndex);
+        commit('addMessage', { message: `Has seleccionado: ${rod.name}`, type: 'system' });
+      }
+    },
+    selectBoat({ commit, state }, boatIndex) {
+      const boat = state.boats[boatIndex];
+      if (!state.unlockedBoats[boatIndex]) {
+        if (state.money >= boat.price) {
+          if (confirm(`¿Quieres comprar el ${boat.name} por ${boat.price}?`)) {
+            commit('spendMoney', boat.price);
+            let newUnlockedBoats = [...state.unlockedBoats];
+            newUnlockedBoats[boatIndex] = true;
+            commit('setUnlockedBoats', newUnlockedBoats);
+            commit('addMessage', { message: `¡Has comprado el ${boat.name}!`, type: 'achievement' });
+          }
+        } else {
+          commit('addMessage', { message: `Necesitas ${boat.price} para comprar este barco`, type: 'warning' });
+        }
+      } else {
+        commit('setCurrentBoat', boatIndex);
+        commit('addMessage', { message: `Has seleccionado: ${boat.name}`, type: 'system' });
+      }
     },
     // ... (más acciones según sea necesario)
   },
