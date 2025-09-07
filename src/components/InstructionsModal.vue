@@ -1,7 +1,13 @@
 <template>
-  <div id="instructions" :class="{ 'instructions-fade': instructionsHidden }">
-    Usa las flechas ← → para mover el barco<br>
-    Usa la flecha ↑ para lanzar la caña
+  <div id="instructionsModal" class="modal" v-if="modals.instructions">
+    <div class="modal-content">
+      <span id="closeInstructions" class="close" @click="hideInstructions">×</span>
+      <h2>Instrucciones</h2>
+      <p>Usa las flechas ← → para mover el barco</p>
+      <p>Usa la flecha ↑ para lanzar la caña</p>
+      <p>Presiona 'M' para el Mercado, 'S' para Estadísticas, 'G' para Objetivos, 'R' para Reciclaje, 'T' para Tesoros.</p>
+      <p>Presiona 'V' para Vender Pescado, 'D' para Dormir, 'E' para Equipamiento.</p>
+    </div>
   </div>
 </template>
 
@@ -13,11 +19,15 @@ export default {
   name: 'InstructionsModal',
   setup() {
     const store = useStore();
+    const modals = computed(() => store.getters.getModals);
 
-    const instructionsHidden = computed(() => store.getters.getInstructionsHidden);
+    const hideInstructions = () => {
+      store.dispatch('toggleModal', 'instructions');
+    };
 
     return {
-      instructionsHidden,
+      modals,
+      hideInstructions,
     };
   },
 };
@@ -25,21 +35,50 @@ export default {
 
 <style scoped>
 /* Estilos para InstructionsModal */
-#instructions {
+#instructionsModal {
+    display: none; /* Controlado por v-if */
     position: fixed;
-    bottom: 50%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0,0,0,0.2);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 10px;
-    text-align: center;
-    transition: opacity 1s ease-out; /* Transición para el desvanecimiento */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    z-index: 1000;
 }
 
-.instructions-fade {
-    opacity: 0;
-    /* display: none; will be handled by Vue logic */
+#instructionsModal .modal-content {
+    background-color: rgba(50,50,50,0.95);
+    margin: 15% auto;
+    padding: 20px;
+    width: 70%;
+    max-width: 600px;
+    border-radius: 5px;
+    color: white;
+    position: relative;
+    text-align: center;
+}
+
+#instructionsModal h2 {
+    color: #ffd700;
+    margin-bottom: 20px;
+}
+
+#instructionsModal p {
+    margin-bottom: 10px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
 }
 </style>

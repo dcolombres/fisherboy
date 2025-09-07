@@ -1,7 +1,7 @@
 <template>
-  <div id="boat">
+  <div id="boat" :style="{ left: boatPosition + '%', bottom: '45%' }">
     <div id="fisher"></div>
-    <div id="fishingLine"></div>
+    <div id="fishingLine" :style="{ height: isFishing ? '200px' : '100px' }"></div>
   </div>
 </template>
 
@@ -14,17 +14,12 @@ export default {
   setup() {
     const store = useStore();
 
-    const boatPosition = computed(() => store.getters.getBoatPosition);
-    const currentBoat = computed(() => store.getters.getCurrentBoat);
-    const boats = computed(() => store.state.boats); // Asumiendo que boats está en el estado
-
-    // Observar cambios en boatPosition y currentBoat para actualizar el estilo del barco
-    // Esto se hará con watchers en el componente padre o con directivas de estilo en el template
+    const boatPosition = computed(() => store.state.boatPosition);
+    const isFishing = computed(() => store.state.isFishing);
 
     return {
       boatPosition,
-      currentBoat,
-      boats,
+      isFishing,
     };
   },
 };

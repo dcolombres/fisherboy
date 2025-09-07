@@ -1,81 +1,81 @@
 <template>
-  <div id="treasuresModal" class="modal">
+  <div class="modal" v-if="show" @click.self="close">
     <div class="modal-content">
-      <span id="closeTreasures" class="close" @click="hideTreasures">×</span>
+      <span class="close" @click="close">&times;</span>
       <h2>Tesoros</h2>
-      <p>¡Próximamente!</p>
+      <p>¡La búsqueda de tesoros llegará en una futura actualización! Prepárate para encontrar objetos valiosos en las profundidades del océano.</p>
     </div>
   </div>
 </template>
 
 <script>
 import { useStore } from 'vuex';
+import { computed } from 'vue';
 
 export default {
   name: 'TreasuresModal',
   setup() {
     const store = useStore();
-
-    const hideTreasures = () => {
-      // Esto debería ser una acción o mutación en Vuex para controlar la visibilidad del modal
-      document.getElementById('treasuresModal').style.display = 'none';
-    };
+    const show = computed(() => store.state.modals.treasures);
+    const close = () => store.dispatch('toggleModal', 'treasures');
 
     return {
-      hideTreasures,
+      show,
+      close,
     };
   },
 };
 </script>
 
 <style scoped>
-/* Estilos para TreasuresModal */
 .modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.7);
-    z-index: 1000;
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
 }
 
 .modal-content {
-    background-color: rgba(50,50,50,0.95);
-    margin: 15% auto;
-    padding: 20px;
-    width: 70%;
-    max-width: 600px;
-    border-radius: 5px;
-    color: white;
-    position: relative;
+  background-color: #222222;
+  padding: 30px;
+  width: 80%;
+  max-width: 600px;
+  border-radius: 15px;
+  color: white;
+  position: relative;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  text-align: center;
 }
 
 .close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
+  color: #aaa;
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 32px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.3s ease;
 }
 
 .close:hover,
 .close:focus {
-    color: #fff;
-    text-decoration: none;
-    cursor: pointer;
+  color: #fff;
 }
 
-#treasuresModal h2 {
-    color: #ffd700;
-    text-align: center;
-    margin-bottom: 20px;
+h2 {
+  margin-bottom: 20px;
+  color: #ffd700;
 }
 
-#treasuresModal p {
-    text-align: center;
-    font-size: 1.2em;
-    color: #ddd;
+p {
+  font-size: 1.2em;
+  line-height: 1.6;
 }
 </style>

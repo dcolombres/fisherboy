@@ -3,39 +3,40 @@ import { createStore } from 'vuex';
 const store = createStore({
   state() {
     return {
-      // --- ESTADO DEL JUEGO ---
-      money: 0, // Dinero actual del jugador.
-      fishCount: 0, // Cantidad total de peces atrapados.
-      energy: 100, // Energía actual del jugador (0-100).
-      gameTime: 360, // Tiempo de juego en minutos (un día de 24h = 1440 min).
-      currentDay: 1, // Día actual del juego.
-      isNight: false, // Booleano que indica si es de noche.
-      isFishing: false, // Booleano que indica si el jugador está pescando activamente.
-      boatPosition: 5, // Posición horizontal del barco en porcentaje.
-      currentRod: 0, // Índice de la caña de pescar actualmente seleccionada.
-      currentBoat: 0, // Índice del barco actualmente seleccionado.
-      unlockedRods: [true, false, false], // Array que indica qué cañas ha desbloqueado el jugador.
-      unlockedBoats: [true, false, false], // Array que indica qué barcos ha desbloqueado el jugador.
-      todayFishCount: 0, // Contador de peces atrapados en el día actual.
-      todayFishValue: 0, // Valor total de los peces atrapados en el día actual.
-      caughtFishInventory: [], // Inventario de los peces atrapados hoy.
-      caughtTrashInventory: [], // Inventario de la basura atrapada.
-      stormActive: false, // Booleano que indica si hay una tormenta activa.
-      lastStormTime: 0, // Marca de tiempo de la última tormenta para controlar su frecuencia.
-      lastEnergyRegen: Date.now(), // Marca de tiempo de la última regeneración de energía.
-      fishingStats: { // Objeto para mantener estadísticas de pesca a largo plazo.
+      // --- Game State ---
+      money: 0,
+      commonFishCount: 0,
+      exoticFishCount: 0,
+      trashCount: 0,
+      treasuresCount: 0, // TODO: Implement treasures
+      energy: 100,
+      gameTime: 360, // In-game minutes
+      currentDay: 1,
+      isNight: false,
+      isFishing: false,
+      boatPosition: 50,
+      currentRod: 0,
+      currentBoat: 0,
+      unlockedRods: [true, false, false],
+      unlockedBoats: [true, false, false],
+      caughtFishInventory: [],
+      caughtTrashInventory: [],
+      fishingStats: {
         totalCaught: 0,
         totalValue: 0,
         fishByType: {}
       },
-      octopusActive: false, // Booleano para el evento especial del pulpo.
-      lastOctopusDay: 0,
-      mermaidActive: false, // Booleano para el evento especial de la sirena.
-      lastMermaidDay: 0,
-      instructionsHidden: false, // Booleano para ocultar las instrucciones iniciales.
-      cheatCode: '', // Cadena para registrar la entrada de trucos.
-      MONEY_CHEAT: 'money', // El código de truco para obtener dinero.
-      messages: [], // Array para almacenar los mensajes de la consola.
+      messages: [],
+      modals: {
+        market: false,
+        stats: false,
+        goals: false,
+        recycle: false,
+        treasures: false,
+        instructions: false,
+        equipment: false,
+      },
+      // --- Game Configuration ---
       fishingRods: [
         { name: "Caña Básica", power: 1, speed: 1, catchRate: 0.6, price: 0 },
         { name: "Caña Profesional", power: 1.5, speed: 1.3, catchRate: 0.75, price: 5000 },
@@ -46,185 +47,336 @@ const store = createStore({
         { name: "Barco Avanzado", speedMultiplier: 1.5, catchBonus: 1.2, price: 25000, image: 'https://moroarte.com/games/botelvl1.png' },
         { name: "Barco Profesional", speedMultiplier: 2, catchBonus: 1.5, price: 150000, image: 'https://moroarte.com/games/botelvl2.png' }
       ],
+      trashTypes: [
+        { name: "Botella de Plástico", recycleValue: 150 },
+        { name: "Red Vieja", recycleValue: 250 },
+        { name: "Lata de Conserva", recycleValue: 200 },
+        { name: "Botella de Vidrio", recycleValue: 300 },
+        { name: "Neumático de Goma", recycleValue: 1500 },
+        { name: "Sedal de Pesca", recycleValue: 100 },
+        { name: "Chatarra de Metal", recycleValue: 150 },
+        { name: "Bolsa de Plástico", recycleValue: 50 },
+        { name: "Caña Rota", recycleValue: 1000 },
+        { name: "Contenedor de Aceite", recycleValue: 1400 }
+      ],
+      fishTypes: [
+        { name: "Sardina", value: 50, color: "silver", speed: 1, rarity: 0.3, isExotic: false },
+        { name: "Atún", value: 100, color: "darkblue", speed: 1.2, rarity: 0.25, isExotic: false },
+        { name: "Salmón", value: 200, color: "salmon", speed: 1.5, rarity: 0.2, isExotic: false },
+        { name: "Pez Dorado", value: 400, color: "gold", speed: 2, rarity: 0.15, isExotic: false },
+        { name: "Pez Espada", value: 900, color: "gray", speed: 2.2, rarity: 0.1, isExotic: false },
+        { name: "Tiburón", value: 1500, color: "darkgray", speed: 2.5, rarity: 0.05, isExotic: false },
+        { name: "Pez Globo", value: 300, color: "yellow", speed: 1.8, rarity: 0.18, isExotic: false },
+        { name: "Lenguado", value: 150, color: "tan", speed: 1.3, rarity: 0.22, isExotic: false },
+        { name: "Lubina", value: 2550, color: "silver", speed: 1.6, rarity: 0.2, isExotic: false },
+        { name: "Pez Payaso", value: 80, color: "orange", speed: 1.4, rarity: 0.28, isExotic: false },
+        {
+            name: "Pez Dragón Celestial",
+            value: 34500,
+            color: "#4a90e2",
+            speed: 3.5,
+            rarity: 0.001,
+            isExotic: true
+        },
+        {
+            name: "Leviatán Abisal",
+            value: 28000,
+            color: "#1e0f3d",
+            speed: 3.2,
+            rarity: 0.002,
+            isExotic: true
+        },
+        {
+            name: "Quimera Luminosa",
+            value: 25000,
+            color: "#50fa7b",
+            speed: 3.0,
+            rarity: 0.003,
+            isExotic: true
+        },
+        {
+            name: "Pez Fénix",
+            value: 22000,
+            color: "#ff5555",
+            speed: 2.8,
+            rarity: 0.004,
+            isExotic: true
+        },
+        {
+            name: "Mini Kraken",
+            value: 18500,
+            color: "#8b0000",
+            speed: 2.7,
+            rarity: 0.005,
+            isExotic: true
+        },
+        {
+            name: "Sirena Escamada",
+            value: 15000,
+            color: "#ff79c6",
+            speed: 2.6,
+            rarity: 0.006,
+            isExotic: true
+        },
+        {
+            name: "Pez Unicornio",
+            value: 12000,
+            color: "#bd93f9",
+            speed: 2.5,
+            rarity: 0.007,
+            isExotic: true
+        },
+        {
+            name: "Medusa de Cristal",
+            value: 9000,
+            color: "#8be9fd",
+            speed: 2.4,
+            rarity: 0.008,
+            isExotic: true
+        },
+        {
+            name: "Serpiente Marina",
+            value: 7500,
+            color: "#50fa7b",
+            speed: 2.3,
+            rarity: 0.009,
+            isExotic: true
+        },
+        {
+            name: "Pez Espectral",
+            value: 5000,
+            color: "#f8f8f2",
+            speed: 2.2,
+            rarity: 0.01,
+            isExotic: true
+        },
+        {
+            name: "Leviatán de las Profundidades",
+            value: 45000,
+            color: "#800080",
+            speed: 4.0,
+            rarity: 0.001,
+            requirements: { boat: 2, rod: 2 },
+            isExotic: true
+        },
+        {
+            name: "Pez Ancestral",
+            value: 42000,
+            color: "#4B0082",
+            speed: 3.8,
+            rarity: 0.002,
+            requirements: { boat: 2, rod: 2 },
+            isExotic: true
+        },
+        {
+            name: "Emperador del Océano",
+            value: 40000,
+            color: "#00008B",
+            speed: 3.7,
+            rarity: 0.003,
+            requirements: { boat: 2, rod: 2 },
+            isExotic: true
+        },
+        {
+            name: "Pez Arcoíris",
+            value: 15000,
+            color: "#FF1493",
+            speed: 2.8,
+            rarity: 0.01,
+            requirements: { boat: 1, rod: 2 },
+            isExotic: true
+        },
+        {
+            name: "Cazador Nocturno",
+            value: 12000,
+            color: "#4682B4",
+            speed: 2.6,
+            rarity: 0.015,
+            requirements: { boat: 2, rod: 1 },
+            isExotic: true
+        },
+        {
+            name: "Guardián del Coral",
+            value: 10000,
+            color: "#FF7F50",
+            speed: 2.5,
+            rarity: 0.02,
+            requirements: { boat: 1, rod: 1 },
+            isExotic: true
+        }
+      ],
     };
   },
   mutations: {
-    // Mutaciones para actualizar el estado
-    setMoney(state, value) {
-      state.money = value;
-    },
-    setFishCount(state, value) {
-      state.fishCount = value;
-    },
-    setEnergy(state, value) {
-      state.energy = value;
-    },
-    setGameTime(state, value) {
-      state.gameTime = value;
-    },
-    setCurrentDay(state, value) {
-      state.currentDay = value;
-    },
-    setIsNight(state, value) {
-      state.isNight = value;
-    },
-    setIsFishing(state, value) {
-      state.isFishing = value;
-    },
-    setBoatPosition(state, value) {
-      state.boatPosition = value;
-    },
-    setCurrentRod(state, value) {
-      state.currentRod = value;
-    },
-    setCurrentBoat(state, value) {
-      state.currentBoat = value;
-    },
-    setUnlockedRods(state, value) {
-      state.unlockedRods = value;
-    },
-    setUnlockedBoats(state, value) {
-      state.unlockedBoats = value;
-    },
-    setTodayFishCount(state, value) {
-      state.todayFishCount = value;
-    },
-    setTodayFishValue(state, value) {
-      state.todayFishValue = value;
-    },
-    setCaughtFishInventory(state, value) {
-      state.caughtFishInventory = value;
-    },
-    setCaughtTrashInventory(state, value) {
-      state.caughtTrashInventory = value;
-    },
-    setStormActive(state, value) {
-      state.stormActive = value;
-    },
-    setLastStormTime(state, value) {
-      state.lastStormTime = value;
-    },
-    setLastEnergyRegen(state, value) {
-      state.lastEnergyRegen = value;
-    },
-    setFishingStats(state, value) {
-      state.fishingStats = value;
-    },
-    setOctopusActive(state, value) {
-      state.octopusActive = value;
-    },
-    setLastOctopusDay(state, value) {
-      state.lastOctopusDay = value;
-    },
-    setMermaidActive(state, value) {
-      state.mermaidActive = value;
-    },
-    setLastMermaidDay(state, value) {
-      state.lastMermaidDay = value;
-    },
-    setInstructionsHidden(state, value) {
-      state.instructionsHidden = value;
-    },
-    setCheatCode(state, value) {
-      state.cheatCode = value;
-    },
-    setMoneyCheat(state, value) {
-      state.MONEY_CHEAT = value;
-    },
-    // Mutaciones para añadir elementos a inventarios
-    addCaughtFish(state, fish) {
-      state.caughtFishInventory.push(fish);
-    },
-    addCaughtTrash(state, trash) {
-      state.caughtTrashInventory.push(trash);
-    },
-    // Mutación para actualizar una estadística de pesca específica
-    updateFishStats(state, { fishName, count, totalValue }) {
-      if (!state.fishingStats.fishByType[fishName]) {
-        state.fishingStats.fishByType[fishName] = { count: 0, totalValue: 0 };
-      }
-      state.fishingStats.fishByType[fishName].count += count;
-      state.fishingStats.fishByType[fishName].totalValue += totalValue;
-    },
-    // Mutación para actualizar el total de peces atrapados y el valor total
-    updateTotalFishingStats(state, { totalCaught, totalValue }) {
-      state.fishingStats.totalCaught = totalCaught;
-      state.fishingStats.totalValue = totalValue;
-    },
-    // Mutación para añadir un mensaje a la consola
-    addMessage(state, messagePayload) {
-      state.messages.push(messagePayload);
-      // Limita el número de mensajes en la consola a 10.
-      if (state.messages.length > 10) {
-        state.messages.shift(); // Elimina el mensaje más antiguo
+    setMoney: (state, amount) => state.money = amount,
+    addMoney: (state, amount) => state.money += amount,
+    spendMoney: (state, amount) => state.money -= amount,
+    setEnergy: (state, amount) => state.energy = amount,
+    setGameTime: (state, time) => state.gameTime = time,
+    setCurrentDay: (state, day) => state.currentDay = day,
+    setIsNight: (state, isNight) => state.isNight = isNight,
+    setIsFishing: (state, isFishing) => state.isFishing = isFishing,
+    setBoatPosition: (state, position) => state.boatPosition = position,
+    setCurrentRod: (state, index) => state.currentRod = index,
+    setCurrentBoat: (state, index) => state.currentBoat = index,
+    unlockRod: (state, index) => state.unlockedRods[index] = true,
+    unlockBoat: (state, index) => state.unlockedBoats[index] = true,
+    addMessage: (state, message) => {
+      const messageWithId = { ...message, id: Date.now() };
+      state.messages.unshift(messageWithId);
+      if (state.messages.length > 5) { // Limitar a 5 mensajes en pantalla
+        state.messages.pop();
       }
     },
+    addCaughtTrash: (state, trash) => state.caughtTrashInventory.push(trash),
+    setCaughtTrashInventory: (state, inventory) => state.caughtTrashInventory = inventory,
+    addCaughtFish: (state, fish) => state.caughtFishInventory.push(fish),
+    setCaughtFishInventory: (state, inventory) => state.caughtFishInventory = inventory,
+    incrementCommonFishCount: (state) => state.commonFishCount++,
+    incrementExoticFishCount: (state) => state.exoticFishCount++,
+    incrementTrashCount: (state) => state.trashCount++,
+    updateFishingStats(state, { fish, value }) {
+        if (!state.fishingStats.fishByType[fish.name]) {
+            state.fishingStats.fishByType[fish.name] = { count: 0, totalValue: 0 };
+        }
+        state.fishingStats.fishByType[fish.name].count++;
+        state.fishingStats.fishByType[fish.name].totalValue += value;
+        state.fishingStats.totalCaught++;
+        state.fishingStats.totalValue += value;
+    },
+    toggleModal(state, modal) { state.modals[modal] = !state.modals[modal]; },
   },
   actions: {
-    // Acciones para interactuar con el estado
-    earnMoney({ commit, state }, amount) {
-      commit('setMoney', state.money + amount);
+    initializeGame({ commit }) {
+      commit('addMessage', { text: '¡Bienvenido! Usa las flechas para jugar.', type: 'system' });
     },
-    spendMoney({ commit, state }, amount) {
-      commit('setMoney', state.money - amount);
+    gameTick({ commit, state }) {
+      if (state.energy < 100) commit('setEnergy', state.energy + 1);
+      const newTime = state.gameTime + 1;
+      if (newTime >= 1440) {
+        commit('setGameTime', 0);
+        commit('setCurrentDay', state.currentDay + 1);
+      } else {
+        commit('setGameTime', newTime);
+      }
+      const isNight = state.gameTime < 360 || state.gameTime > 1080;
+      if (isNight !== state.isNight) commit('setIsNight', isNight);
     },
-    incrementFishCount({ commit, state }) {
-      commit('setFishCount', state.fishCount + 1);
+    handleKeyDown({ dispatch }, keyCode) {
+      switch (keyCode) {
+        case 'ArrowLeft': dispatch('moveBoat', -1); break;
+        case 'ArrowRight': dispatch('moveBoat', 1); break;
+        case 'ArrowUp': dispatch('startFishing'); break;
+        case 'KeyM': dispatch('toggleModal', 'market'); break;
+        case 'KeyS': dispatch('toggleModal', 'stats'); break;
+        case 'KeyG': dispatch('toggleModal', 'goals'); break;
+        case 'KeyR': dispatch('toggleModal', 'recycle'); break;
+        case 'KeyT': dispatch('toggleModal', 'treasures'); break;
+        case 'KeyE': dispatch('toggleModal', 'equipment'); break;
+      }
     },
-    decrementEnergy({ commit, state }, amount) {
-      commit('setEnergy', state.energy - amount);
+    moveBoat({ commit, state }, direction) {
+      const speed = 5 * state.boats[state.currentBoat].speedMultiplier;
+      let newPosition = state.boatPosition + direction * speed;
+      newPosition = Math.max(10, Math.min(90, newPosition));
+      commit('setBoatPosition', newPosition);
     },
-    incrementGameTime({ commit, state }) {
-      commit('setGameTime', state.gameTime + 1);
-    },
-    // Acción para añadir un mensaje a la consola
-    addMessage({ commit }, messagePayload) {
-      commit('addMessage', messagePayload);
+    startFishing({ commit, state }) {
+      if (state.isFishing || state.energy < 15) return;
+      commit('setIsFishing', true);
+      commit('setEnergy', state.energy - 15);
+      commit('addMessage', { text: 'Lanzando caña...', type: 'system' });
+      setTimeout(() => {
+        const boat = state.boats[state.currentBoat];
+        const rod = state.fishingRods[state.currentRod];
+        if (Math.random() < 0.3) {
+          const trashItem = state.trashTypes[Math.floor(Math.random() * state.trashTypes.length)];
+          commit('addCaughtTrash', trashItem);
+          commit('incrementTrashCount');
+          commit('addMessage', { text: `¡Has pescado ${trashItem.name}!`, type: 'catch' });
+        } else {
+          if (Math.random() * boat.catchBonus < rod.catchRate) {
+            const fish = state.fishTypes[Math.floor(Math.random() * state.fishTypes.length)];
+            const value = Math.floor(fish.value * (state.isNight ? 1.5 : 1));
+            commit('addMessage', { text: `¡Has atrapado un ${fish.name}! (${value})`, type: 'catch' });
+            commit('updateFishingStats', { fish, value });
+            commit('addCaughtFish', { fish, value });
+            if (fish.isExotic) {
+                commit('incrementExoticFishCount');
+            } else {
+                commit('incrementCommonFishCount');
+            }
+            commit('addMoney', value);
+          } else {
+            commit('addMessage', { text: 'El pez escapó...', type: 'warning' });
+          }
+        }
+        commit('setIsFishing', false);
+      }, 2000 / boat.speedMultiplier);
     },
     selectRod({ commit, state }, rodIndex) {
-      const rod = state.fishingRods[rodIndex];
-      if (!state.unlockedRods[rodIndex]) {
-        if (state.money >= rod.price) {
-          if (confirm(`¿Quieres comprar la ${rod.name} por ${rod.price}?`)) {
+        const rod = state.fishingRods[rodIndex];
+        if (state.unlockedRods[rodIndex]) {
+            commit('setCurrentRod', rodIndex);
+        } else if (state.money >= rod.price) {
             commit('spendMoney', rod.price);
-            let newUnlockedRods = [...state.unlockedRods];
-            newUnlockedRods[rodIndex] = true;
-            commit('setUnlockedRods', newUnlockedRods);
-            commit('addMessage', { message: `¡Has comprado la ${rod.name}!`, type: 'achievement' });
-          }
-        } else {
-          commit('addMessage', { message: `Necesitas ${rod.price} para comprar esta caña`, type: 'warning' });
+            commit('unlockRod', rodIndex);
+            commit('addMessage', { text: `¡Has comprado la ${rod.name}!`, type: 'achievement' });
         }
-      } else {
-        commit('setCurrentRod', rodIndex);
-        commit('addMessage', { message: `Has seleccionado: ${rod.name}`, type: 'system' });
-      }
     },
     selectBoat({ commit, state }, boatIndex) {
-      const boat = state.boats[boatIndex];
-      if (!state.unlockedBoats[boatIndex]) {
-        if (state.money >= boat.price) {
-          if (confirm(`¿Quieres comprar el ${boat.name} por ${boat.price}?`)) {
+        const boat = state.boats[boatIndex];
+        if (state.unlockedBoats[boatIndex]) {
+            commit('setCurrentBoat', boatIndex);
+        } else if (state.money >= boat.price) {
             commit('spendMoney', boat.price);
-            let newUnlockedBoats = [...state.unlockedBoats];
-            newUnlockedBoats[boatIndex] = true;
-            commit('setUnlockedBoats', newUnlockedBoats);
-            commit('addMessage', { message: `¡Has comprado el ${boat.name}!`, type: 'achievement' });
-          }
-        } else {
-          commit('addMessage', { message: `Necesitas ${boat.price} para comprar este barco`, type: 'warning' });
+            commit('unlockBoat', boatIndex);
+            commit('addMessage', { text: `¡Has comprado el ${boat.name}!`, type: 'achievement' });
         }
-      } else {
-        commit('setCurrentBoat', boatIndex);
-        commit('addMessage', { message: `Has seleccionado: ${boat.name}`, type: 'system' });
-      }
     },
-    // ... (más acciones según sea necesario)
+    sellAllFish({ commit, state }) {
+        const totalValue = state.caughtFishInventory.reduce((sum, item) => sum + item.value, 0);
+        if (totalValue > 0) {
+            commit('addMoney', totalValue);
+            commit('setCaughtFishInventory', []);
+            commit('addMessage', { text: `Vendiste pescado por $${totalValue}.`, type: 'system' });
+        }
+    },
+    recycleItem({ commit, state }, index) {
+        const item = state.caughtTrashInventory[index];
+        commit('addMoney', item.recycleValue);
+        const newInventory = [...state.caughtTrashInventory];
+        newInventory.splice(index, 1);
+        commit('setCaughtTrashInventory', newInventory);
+    },
+    recycleAllTrash({ commit, state }) {
+        const totalValue = state.caughtTrashInventory.reduce((sum, item) => sum + item.recycleValue, 0);
+        if (totalValue > 0) {
+            commit('addMoney', totalValue);
+            commit('setCaughtTrashInventory', []);
+            commit('addMessage', { text: `Reciclaste todo por $${totalValue}.`, type: 'system' });
+        }
+    },
+    goToSleep({ commit, state }) {
+        commit('setEnergy', 100);
+        commit('setCaughtFishInventory', []);
+        const newTime = 360; // Wake up at 6 AM
+        if (state.gameTime > newTime) {
+            commit('setCurrentDay', state.currentDay + 1);
+        }
+        commit('setGameTime', newTime);
+        commit('addMessage', { text: 'Duermes profundamente...', type: 'system' });
+    },
+    toggleModal({ commit }, modal) {
+      commit('toggleModal', modal);
+    },
   },
   getters: {
-    // Getters para obtener datos del estado
     getMoney: (state) => state.money,
-    getFishCount: (state) => state.fishCount,
+    getCommonFishCount: (state) => state.commonFishCount,
+    getExoticFishCount: (state) => state.exoticFishCount,
+    getTrashCount: (state) => state.trashCount,
+    getTreasuresCount: (state) => state.treasuresCount,
     getEnergy: (state) => state.energy,
     getGameTime: (state) => state.gameTime,
     getCurrentDay: (state) => state.currentDay,
@@ -235,22 +387,12 @@ const store = createStore({
     getCurrentBoat: (state) => state.currentBoat,
     getUnlockedRods: (state) => state.unlockedRods,
     getUnlockedBoats: (state) => state.unlockedBoats,
-    getTodayFishCount: (state) => state.todayFishCount,
-    getTodayFishValue: (state) => state.todayFishValue,
-    getCaughtFishInventory: (state) => state.caughtFishInventory,
-    getCaughtTrashInventory: (state) => state.caughtTrashInventory,
-    getStormActive: (state) => state.stormActive,
-    getLastStormTime: (state) => state.lastStormTime,
-    getLastEnergyRegen: (state) => state.lastEnergyRegen,
+    getMessages: (state) => state.messages,
+    getFishingRods: (state) => state.fishingRods,
+    getBoats: (state) => state.boats,
     getFishingStats: (state) => state.fishingStats,
-    getOctopusActive: (state) => state.octopusActive,
-    getLastOctopusDay: (state) => state.lastOctopusDay,
-    getMermaidActive: (state) => state.mermaidActive,
-    getLastMermaidDay: (state) => state.lastMermaidDay,
-    getInstructionsHidden: (state) => state.instructionsHidden,
-    getCheatCode: (state) => state.cheatCode,
-    getMoneyCheat: (state) => state.MONEY_CHEAT,
-    getMessages: (state) => state.messages, // Getter para los mensajes
+    getCaughtTrashInventory: (state) => state.caughtTrashInventory,
+    getModals: (state) => state.modals,
   },
 });
 

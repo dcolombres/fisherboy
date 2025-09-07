@@ -1,28 +1,25 @@
 <template>
-  <div id="statsOverlay"></div>
-  <div id="statsModal">
-    <button id="closeStats" @click="hideStats">×</button>
-    <h3 class="stats-title">Estadísticas de Pesca<br>
-      <small style="font-size: 0.7em; color: #ffd700">
-        Ciclo Actual: Día 1 de 7<br>
-        Reiniciar en 6 días
-      </small>
-    </h3>
-    <div class="stats-summary">
-      <div>Peces totales atrapados: <span id="totalFishCaught">{{ fishingStats.totalCaught }}</span></div>
-      <div>Valor total ganado: $<span id="totalValueEarned">{{ fishingStats.totalValue }}</span></div>
-    </div>
-    <h4 style="color: #ffd700; margin: 20px 0 10px;">Estadísticas de Peces</h4>
-    <div class="stats-grid">
-      <div v-for="(stats, fishName) in fishingStats.fishByType" :key="fishName" class="fish-stat">
-        <div class="fish-stat-name">{{ fishName }}</div>
-        <div class="fish-stat-count">Atrapados: {{ stats.count }}</div>
-        <div class="fish-stat-value">Valor: ${{ stats.totalValue }}</div>
+  <div class="modal" v-if="show" @click.self="close">
+    <div class="modal-content">
+      <span class="close" @click="close">&times;</span>
+      <h2>Estadísticas de Pesca</h2>
+      <div class="stats-summary">
+        <div>Peces totales atrapados: {{ fishingStats.totalCaught }}</div>
+        <div>Valor total ganado: ${{ fishingStats.totalValue }}</div>
       </div>
-    </div>
-    <h4 style="color: #ffd700; margin: 20px 0 10px;">Estadísticas de Reciclaje</h4>
-    <div class="stats-grid">
-      <!-- Las estadísticas de reciclaje se poblarán aquí si se implementan en Vuex -->
+      <h3>Estadísticas de Peces</h3>
+      <div class="stats-grid">
+        <div v-for="(stats, fishName) in fishingStats.fishByType" :key="fishName" class="fish-stat">
+          <div class="fish-stat-name">{{ fishName }}</div>
+          <div class="fish-stat-count">Atrapados: {{ stats.count }}</div>
+          <div class="fish-stat-value">Valor: ${{ stats.totalValue }}</div>
+        </div>
+      </div>
+      <h3>Estadísticas de Reciclaje</h3>
+      <div class="stats-grid">
+        <!-- Las estadísticas de reciclaje se poblarán aquí si se implementan en Vuex -->
+        <p>Próximamente...</p>
+      </div>
     </div>
   </div>
 </template>
@@ -35,85 +32,107 @@ export default {
   name: 'StatsModal',
   setup() {
     const store = useStore();
+    const show = computed(() => store.state.modals.stats);
+    const close = () => store.dispatch('toggleModal', 'stats');
 
     const fishingStats = computed(() => store.getters.getFishingStats);
 
-    const hideStats = () => {
-      // Esto debería ser una acción o mutación en Vuex para controlar la visibilidad del modal
-      document.getElementById('statsModal').style.display = 'none';
-      document.getElementById('statsOverlay').style.display = 'none';
-    };
-
     return {
+      show,
+      close,
       fishingStats,
-      hideStats,
     };
   },
 };
 </script>
 
 <style scoped>
-/* Estilos para StatsModal */
-#statsModal {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.95);
-    color: white;
-    padding: 30px;
-    border-radius: 0px;
-    width: 90%;
-    max-width: 1000px;
-    z-index: 1000;
-    max-height: 80vh;
-    overflow-y: auto;
+.modal {
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
 }
 
-#statsOverlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 999;
+.modal-content {
+  background-color: #222222;
+  padding: 30px;
+  width: 80%;
+  max-width: 1000px;
+  border-radius: 15px;
+  color: white;
+  position: relative;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.close {
+  color: #aaa;
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 32px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.close:hover,
+.close:focus {
+  color: #fff;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+h3 {
+  color: #ffd700;
+  margin: 30px 0 15px;
+  text-align: center;
+}
+
+.stats-summary {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 1.2em;
 }
 
 .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
 }
 
 .fish-stat {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 15px;
-    border-radius: 5px;
-    transition: transform 0.2s;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 10px;
+  transition: transform 0.2s;
 }
 
 .fish-stat:hover {
-    transform: translateY(-2px);
+  transform: translateY(-5px);
 }
 
 .fish-stat-name {
-    color: #ffd700;
-    font-weight: bold;
-    margin-bottom: 5px;
+  color: #ffd700;
+  font-weight: bold;
+  margin-bottom: 10px;
 }
 
 .fish-stat-count {
-    color: white;
-    font-size: 0.9em;
-}
-
-.fish-stat-value {
-    color: #4CAF50;
-    font-size: 0.9em;
-    margin-top: 5px;
+  margin-bottom: 5px;
 }
 </style>
