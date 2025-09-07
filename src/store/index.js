@@ -401,10 +401,6 @@ const store = createStore({
     },
     handleKeyDown({ dispatch }, keyCode) {
       switch (keyCode) {
-        case 'ArrowLeft': dispatch('moveBoat', -1); break;
-        case 'ArrowRight': dispatch('moveBoat', 1); break;
-        case 'ArrowUp': dispatch('startFishing'); break;
-        case 'ArrowDown': dispatch('startDeepFishing'); break;
         case 'KeyM': dispatch('toggleModal', 'market'); break;
         case 'KeyS': dispatch('toggleModal', 'stats'); break;
         case 'KeyG': dispatch('toggleModal', 'goals'); break;
@@ -414,12 +410,6 @@ const store = createStore({
         case 'KeyV': dispatch('sellAllFish'); break; // Vender Pescado
         case 'KeyD': dispatch('goToSleep'); break; // Ir a Dormir
       }
-    },
-    moveBoat({ commit, state }, direction) {
-      const speed = 5 * state.boats[state.currentBoat].speedMultiplier;
-      let newPosition = state.boatPosition + direction * speed;
-      newPosition = Math.max(10, Math.min(90, newPosition));
-      commit('setBoatPosition', newPosition);
     },
     startFishing({ commit, state }) {
       if (state.isFishing || state.energy < 15) return;

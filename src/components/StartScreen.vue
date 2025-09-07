@@ -9,16 +9,16 @@
       
       <div class="instructions-columns">
         <ul>
-          <li>Usa las flechas para mover tu barco.</li>
-          <li>Presiona la flecha hacia arriba para pescar en aguas normales.</li>
-          <li>Presiona la flecha hacia abajo para pescar en aguas profundas (¡cuidado con la energía!).</li>
+          <li>Haz clic en el agua para pescar.</li>
+          <li>Mantén presionado para pesca profunda (¡cuidado con la energía!).</li>
           <li>Vendé tus peces en el mercado para ganar dinero.</li>
+          <li>Reciclá la basura para obtener dinero extra.</li>
         </ul>
         <ul>
-          <li>Reciclá la basura para obtener dinero extra.</li>
           <li>Mejorá tu caña y tu barco para pescar peces más raros.</li>
           <li>Prestá atención a los mensajes que te vana a dar consejos útiles.</li>
           <li>Los tesoros se encuentran en las profundidades, ¡pero solo si tienes el equipo adecuado y la experiencia!</li>
+          <li>El barco no se mueve en esta versión.</li>
         </ul>
       </div>
       <button @click="startGame">Jugar</button>
@@ -38,6 +38,16 @@ export default {
       emit('game-started');
       // Set gameStarted to true after user interaction
       store.commit('setGameStarted', true);
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.mozRequestFullScreen) { /* Firefox */
+        elem.mozRequestFullScreen();
+      } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) { /* IE/Edge */
+        elem.msRequestFullscreen();
+      }
     };
 
     return {

@@ -334,3 +334,66 @@ body.afternoon {
 body.night {
   background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
 }
+
+@media (max-width: 768px) and (orientation: portrait) {
+    #ui-top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        left: 10px;
+        top: 10px;
+    }
+
+    #ui-right-buttons {
+        position: fixed;
+        bottom: 10px;
+        left: 0;
+        right: 0;
+        flex-direction: row;
+        justify-content: space-around;
+        background: rgba(0, 0, 0, 0.6);
+        padding: 10px 0;
+        z-index: 10;
+    }
+
+    #message-console {
+        width: calc(100% - 20px);
+        height: 150px;
+        bottom: 80px; /* Above the bottom buttons */
+        left: 10px;
+        font-size: 0.9em;
+    }
+
+    #boat {
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 35%;
+        width: 150px;
+        height: 80px;
+    }
+
+    #fisher {
+        left: 50%;
+        transform: translateX(-50%);
+        top: -30px;
+        width: 50px;
+        height: 100px;
+    }
+
+    .modal-content {
+        width: 90%;
+        max-width: none;
+        padding: 20px;
+    }
+
+    .start-screen-content {
+        padding: 20px;
+    }
+
+    .start-screen-content h1 {
+        font-size: 3em;
+    }
+
+    .instructions-columns {
+        grid-template-columns: 1fr;
+    }
+}

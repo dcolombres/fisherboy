@@ -1,5 +1,5 @@
 <template>
-  <div class="water" :class="[currentPartOfDay, { 'storm-active': stormActive }]" :style="{ height: '100%' }">
+  <div class="water" :class="[currentPartOfDay, { 'storm-active': stormActive }]" :style="{ height: '100%' }" @mousedown="startPress" @mouseup="endPress" @touchstart.prevent="startPress" @touchend.prevent="endPress">
     <div
       v-for="fish in fishes"
       :key="fish.id"
@@ -60,6 +60,24 @@ export default {
       }, speed * 1000);
     };
 
+    let pressTimer = null;
+    let isLongPress = false;
+
+    const startPress = () => {
+      isLongPress = false;
+      pressTimer = setTimeout(() => {
+        isLongPress = true;
+        store.dispatch('startDeepFishing');
+      }, 500); // 500ms for long press
+    };
+
+    const endPress = () => {
+      clearTimeout(pressTimer);
+      if (!isLongPress) {
+        store.dispatch('startFishing');
+      }
+    };
+
     onMounted(() => {
       fishInterval = setInterval(createFish, 3000); // Crea un pez cada 3 segundos
     });
@@ -72,6 +90,8 @@ export default {
       stormActive,
       fishes,
       currentPartOfDay,
+      startPress,
+      endPress,
     };
   },
 };
