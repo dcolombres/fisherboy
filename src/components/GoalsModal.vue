@@ -3,14 +3,20 @@
     <div class="modal-content">
       <span class="close" @click="close">&times;</span>
       <h2>Objetivos</h2>
-      <div class="goals-grid">
-        <div v-for="goal in goals" :key="goal.id" class="goal" :class="{ completed: goal.completed }">
-          <div class="goal-description">{{ goal.description }}</div>
-          <div class="goal-progress">
-            <div class="goal-progress-bar" :style="{ width: getGoalProgress(goal) + '%' }"></div>
+      <div class="goals-container">
+        <div v-for="(goalList, difficulty) in goals" :key="difficulty" class="goal-category">
+          <h3>{{ difficulty }}</h3>
+          <div class="goals-grid">
+            <div v-for="goal in goalList" :key="goal.id" class="goal" :class="{ completed: goal.completed }">
+              <div class="goal-description">{{ goal.description }}</div>
+              <div class="goal-progress">
+                <div class="goal-progress-bar" :style="{ width: (goal.current / goal.target) * 100 + '%' }"></div>
+              </div>
+              <div class="goal-reward">Recompensa: ${{ goal.reward }}</div>
+              <div class="goal-status">{{ goal.current }} / {{ goal.target }}</div>
+              <div v-if="goal.completed" class="goal-completed">¡Completado!</div>
+            </div>
           </div>
-          <div class="goal-reward">Recompensa: ${{ goal.reward }}</div>
-          <div class="goal-completed">¡Completado!</div>
         </div>
       </div>
     </div>
@@ -27,51 +33,12 @@ export default {
     const store = useStore();
     const show = computed(() => store.state.modals.goals);
     const close = () => store.dispatch('toggleModal', 'goals');
-
     const goals = computed(() => store.getters.getGoals);
-    const commonFishCount = computed(() => store.getters.getCommonFishCount);
-    const exoticFishCount = computed(() => store.getters.getExoticFishCount);
-    const money = computed(() => store.getters.getMoney);
-    const unlockedBoats = computed(() => store.getters.getUnlockedBoats);
-    const trashCount = computed(() => store.getters.getTrashCount);
-
-    const getGoalProgress = (goal) => {
-      let progress = 0;
-      switch (goal.type) {
-        case 'fish_count':
-          progress = ((commonFishCount.value + exoticFishCount.value) / goal.target) * 100;
-          break;
-        case 'exotic_fish_count':
-          progress = (exoticFishCount.value / goal.target) * 100;
-          break;
-        case 'money':
-          progress = (money.value / goal.target) * 100;
-          break;
-        case 'pro_boat':
-          progress = unlockedBoats.value[2] ? 100 : 0; // Assuming index 2 is pro boat
-          break;
-        case 'recycle_count':
-          progress = (trashCount.value / goal.target) * 100;
-          break;
-        case 'recycle_value':
-          // This would require tracking the total value of recycled items.
-          // I will leave this as a placeholder for now.
-          progress = 0;
-          break;
-        case 'specific_fish':
-            // This would require checking the caughtFishInventory for a specific fish name.
-            // I will leave this as a placeholder for now.
-            progress = 0;
-            break;
-      }
-      return Math.min(100, progress);
-    };
 
     return {
       show,
       close,
       goals,
-      getGoalProgress,
     };
   },
 };
@@ -100,6 +67,8 @@ export default {
   color: white;
   position: relative;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  max-height: 450px;
+  overflow-y: auto;
 }
 
 .close {
@@ -121,15 +90,29 @@ export default {
 h2 {
   text-align: center;
   margin-bottom: 20px;
+  color: #ffd700;
+}
+
+.goals-container {
+  overflow-y: auto;
+}
+
+.goal-category {
+  margin-bottom: 20px;
+}
+
+.goal-category h3 {
+  color: #ffd700;
+  text-transform: capitalize;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #ffd700;
+  padding-bottom: 5px;
 }
 
 .goals-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-  max-height: 500px;
-  overflow-y: auto;
-  padding-right: 10px;
 }
 
 .goal {
@@ -138,6 +121,9 @@ h2 {
   border-radius: 10px;
   position: relative;
   transition: transform 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .goal:hover {
@@ -152,7 +138,7 @@ h2 {
 
 .goal-progress {
   background: rgba(0, 0, 0, 0.3);
-  height: 5px;
+  height: 10px;
   border-radius: 5px;
   margin: 10px 0;
   overflow: hidden;
@@ -168,7 +154,13 @@ h2 {
 .goal-reward {
   color: #ffd700;
   font-size: 1em;
-  margin-top: 15px;
+  margin-top: 10px;
+}
+
+.goal-status {
+  font-size: 0.9em;
+  color: #ccc;
+  margin-top: 5px;
 }
 
 .goal-completed {
@@ -185,6 +177,10 @@ h2 {
   font-weight: bold;
   border-radius: 10px;
   font-size: 1.5em;
+}
+
+.goal.completed {
+  background: rgba(76, 175, 80, 0.5);
 }
 
 .goal.completed .goal-completed {

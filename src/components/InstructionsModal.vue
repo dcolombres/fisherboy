@@ -56,6 +56,8 @@ export default {
     color: white;
     position: relative;
     text-align: center;
+    max-height: 400px;
+    overflow-y: auto;
 }
 
 #instructionsModal h2 {

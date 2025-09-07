@@ -17,8 +17,8 @@
       </div>
       <h3>Estadísticas de Reciclaje</h3>
       <div class="stats-grid">
-        <!-- Las estadísticas de reciclaje se poblarán aquí si se implementan en Vuex -->
-        <p>Próximamente...</p>
+        <div>Total de objetos reciclados: {{ recycledObjects.totalRecycled }}</div>
+        <div>Valor total de reciclaje: ${{ recycledObjects.totalRecycledValue }}</div>
       </div>
     </div>
   </div>
@@ -36,11 +36,13 @@ export default {
     const close = () => store.dispatch('toggleModal', 'stats');
 
     const fishingStats = computed(() => store.getters.getFishingStats);
+    const recycledObjects = computed(() => store.getters.getRecycledObjects);
 
     return {
       show,
       close,
       fishingStats,
+      recycledObjects,
     };
   },
 };
@@ -69,7 +71,7 @@ export default {
   color: white;
   position: relative;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-  max-height: 80vh;
+  max-height: 400px;
   overflow-y: auto;
 }
 

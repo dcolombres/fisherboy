@@ -1,5 +1,5 @@
 <template>
-  <div class="water" :class="{ 'night-time': isNight, 'storm-active': stormActive }" :style="{ height: '50%' }">
+  <div class="water" :class="[currentPartOfDay, { 'storm-active': stormActive }]" :style="{ height: '100%' }">
     <div
       v-for="fish in fishes"
       :key="fish.id"
@@ -22,13 +22,13 @@ export default {
     const fishes = ref([]);
     let fishInterval = null;
 
-    const isNight = computed(() => store.getters.getIsNight);
     const stormActive = computed(() => store.getters.getStormActive);
+    const currentPartOfDay = computed(() => store.getters.getCurrentPartOfDay);
     const fishTypes = computed(() => store.state.fishTypes);
 
     const fishShapes = [
-      `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><path d="M95 50 C80 80 40 80 20 50 C40 20 80 20 95 50 Z" fill="{color}"/></svg>`,
-      `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><path d="M90 50 C70 90 30 90 10 50 C30 10 70 10 90 50 Z" fill="{color}"/></svg>`,
+      `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><path d="M95 50 C80 80 40 80 20 50 C40 20 80 20 95 50 Z" fill="{color}"/></svg>`, 
+      `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><path d="M90 50 C70 90 30 90 10 50 C30 10 70 10 90 50 Z" fill="{color}"/></svg>`, 
       `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><path d="M98 50 C70 70 40 80 15 65 C10 50 10 50 15 35 C40 20 70 30 98 50 Z" fill="{color}"/></svg>`
     ];
 
@@ -69,9 +69,9 @@ export default {
     });
 
     return {
-      isNight,
       stormActive,
       fishes,
+      currentPartOfDay,
     };
   },
 };
@@ -83,14 +83,27 @@ export default {
     position: absolute;
     bottom: 0;
     width: 100%;
-    height: 50%;
-    background: linear-gradient(180deg, #0066cc 0%, #003366 100%);
+    height: 100%;
+    background: linear-gradient(180deg, #0066cc 0%, #003366 100%); /* Default to noon */
     opacity: 0.8;
     z-index: 0;
     overflow: hidden; /* Asegura que los peces no se salgan del agua */
+    transition: background 5s ease-in-out;
 }
 
-.water.night-time {
+.water.dawn {
+    background: linear-gradient(180deg, #ffcf8c 0%, #0066cc 100%);
+}
+
+.water.noon {
+    background: linear-gradient(180deg, #0066cc 0%, #003366 100%);
+}
+
+.water.afternoon {
+    background: linear-gradient(180deg, #ff8c69 0%, #8a2be2 100%);
+}
+
+.water.night {
     background: linear-gradient(180deg, #001428 0%, #000810 100%);
 }
 
@@ -133,7 +146,7 @@ export default {
 
 /* Animación de nado vertical de los peces */
 @keyframes fishSwim {
-    0% { transform: translateY(0); }
+    0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
     100% { transform: translateY(0); }
 }

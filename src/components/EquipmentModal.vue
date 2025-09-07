@@ -73,6 +73,8 @@ export default {
   color: white;
   position: relative;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .close {

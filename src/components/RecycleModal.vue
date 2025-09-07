@@ -13,8 +13,11 @@
             </div>
             <button class="btn btn-primary" @click="recycleItem(index)">Reciclar</button>
           </div>
+          <div v-if="caughtTrashInventory.length === 0" class="no-trash-actions">
+            <button class="btn btn-primary" @click="close">Cerrar</button>
+          </div>
         </div>
-        <button class="btn btn-gold" @click="recycleAllTrash">Reciclar Todo</button>
+        
       </div>
     </div>
   </div>
@@ -75,6 +78,8 @@ export default {
   color: white;
   position: relative;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .close {
@@ -105,7 +110,6 @@ h2 {
 }
 
 #trash-items {
-  max-height: 300px;
   overflow-y: auto;
   padding-right: 10px;
 }
@@ -122,5 +126,11 @@ h2 {
 
 .trash-info {
   flex-grow: 1;
+}
+
+.no-trash-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px; /* Add some space above the button */
 }
 </style>

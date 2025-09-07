@@ -25,12 +25,12 @@ export default {
 <style scoped>
 #message-console {
   position: fixed;
-  bottom: 60px;
+  bottom: 20px;
   left: 20px;
   width: 350px;
-  height: 200px;
+  height: 100%;
   display: flex;
-  flex-direction: column-reverse; /* Los mensajes nuevos aparecen abajo y empujan los viejos hacia arriba */
+  flex-direction: column; /* Los mensajes nuevos aparecen abajo y empujan los viejos hacia arriba */
   pointer-events: none; /* Permite hacer clic a través de la consola */
 }
 
@@ -49,7 +49,7 @@ export default {
 .message-catch { color: #50fa7b; }
 .message-achievement { color: #ffd700; }
 .message-warning { color: #ff5555; }
-.message-system { color: #8be9fd; font-style: italic; }
+.message-system { color: #c0e5ee; font-style: italic; }
 
 /* Animaciones de transición */
 .message-fade-enter-active, .message-fade-leave-active {
