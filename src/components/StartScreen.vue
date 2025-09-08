@@ -5,7 +5,6 @@
       
     </div>
     <div class="start-screen-content">
-      <h1>FisherBOY</h1>
       
       <div class="instructions-columns">
         <ul>
