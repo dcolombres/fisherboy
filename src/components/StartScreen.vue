@@ -11,8 +11,6 @@
         <ul>
           <li>Haz clic en el agua para pescar.</li>
           <li>Mantén presionado para pesca profunda (¡cuidado con la energía!).</li>
-          <li>Vendé tus peces en el mercado para ganar dinero.</li>
-          <li>Reciclá la basura para obtener dinero extra.</li>
         </ul>
       </div>
       <button @click="startGame">Jugar</button>
