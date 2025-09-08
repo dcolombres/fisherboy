@@ -6,7 +6,7 @@
 </template>
 
 <script>
-// This is a test comment to trigger GitHub Actions - MI COMENTARIO DE PRUEBA
+// This is a test comment to trigger GitHub Actions - MI COMENTARIO DE PRUEBA 2
 import { onMounted, computed } from 'vue';
 import { useStore } from 'vuex';
 import GameContainer from './components/GameContainer.vue';
