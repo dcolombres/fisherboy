@@ -14,12 +14,6 @@
           <li>Vendé tus peces en el mercado para ganar dinero.</li>
           <li>Reciclá la basura para obtener dinero extra.</li>
         </ul>
-        <ul>
-          <li>Mejorá tu caña y tu barco para pescar peces más raros.</li>
-          <li>Prestá atención a los mensajes que te vana a dar consejos útiles.</li>
-          <li>Los tesoros se encuentran en las profundidades, ¡pero solo si tienes el equipo adecuado y la experiencia!</li>
-          <li>El barco no se mueve en esta versión.</li>
-        </ul>
       </div>
       <button @click="startGame">Jugar</button>
     </div>
