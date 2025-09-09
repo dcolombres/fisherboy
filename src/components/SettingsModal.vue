@@ -89,4 +89,17 @@ h2 {
   flex-direction: column;
   gap: 15px;
 }
+
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    padding: 15px;
+    max-height: 90vh;
+  }
+
+  h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+  }
+}
 </style>

@@ -140,6 +140,7 @@ h3 {
 
 @media (max-width: 768px) {
   .modal-content {
+    width: 95%;
     padding: 15px;
     max-height: 90vh;
   }
