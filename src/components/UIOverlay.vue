@@ -4,12 +4,12 @@
       <div id="game-stats-line-1">
         <div class="stat-item">💰 {{ getMoney }}</div>
         <div class="stat-item">🐟 {{ getCommonFishCount }}</div>
-        <div class="stat-item">✨🐟 {{ getExoticFishCount }}</div>
+        <div class="stat-item">✨ {{ getExoticFishCount }}</div>
         <div class="stat-item">🗑️ {{ getTrashCount }}</div>
         <div class="stat-item">💎 {{ getTreasuresCount }}</div>
       </div>
       <div id="game-stats-line-2">
-        <div class="stat-item">DÍA {{ currentDay }}</div>
+        
         <div class="stat-item">{{ formattedTime }}</div>
         <Weather />
         <div id="energy-bar" :class="energyColorClass">
@@ -20,14 +20,17 @@
 
     <img src="/src/img/muelle.svg" alt="Muelle" class="muelle-img" />
 
-    <button class="fullscreen-btn" @click="toggleFullScreen">⤢</button>
-    <button class="settings-btn" @click="toggleModal('settings')">⚙️</button>
-
+    
     <MessageConsole />
     <div id="bottom-bar">
         <button class="btn-icon" @click="goToSleep" :disabled="!canSleep">🛏️<span class="btn-text">(${{ sleepCost }})</span></button>
         <button class="btn-icon" @click="toggleModal('recycle')">♻️</button>
         <button class="btn-icon" @click="toggleModal('market')">🛒</button>
+    </div>
+
+    <div id="bottom-right-buttons">
+        <button class="map-btn" @click="openMap">🗺️</button>
+        <button class="settings-btn" @click="toggleModal('settings')">⚙️</button>
     </div>
 
     <SettingsModal />
@@ -72,15 +75,7 @@ export default {
       document.body.className = currentPartOfDay.value;
     });
 
-    const toggleFullScreen = () => {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        }
-      }
-    };
+    
 
     return {
       getMoney: computed(() => store.getters.getMoney),
@@ -100,10 +95,11 @@ export default {
       }),
       goToSleep: () => store.dispatch('goToSleep'),
       toggleModal: (modal) => store.dispatch('toggleModal', modal),
+      openMap: () => store.dispatch('addMessage', { text: 'El mapa se desarrollará en el futuro.', type: 'system' }),
       getModals: computed(() => store.getters.getModals),
       messages,
       canSleep,
-      toggleFullScreen,
+      
       currentDay,
     };
   },
@@ -111,11 +107,18 @@ export default {
 </script>
 
 <style scoped>
-.fullscreen-btn {
+
+
+#bottom-right-buttons {
   position: fixed;
-  top: 20px;
+  bottom: 20px;
   right: 20px;
   z-index: 101;
+  display: flex;
+  gap: 10px; /* Space between buttons */
+}
+
+.settings-btn, .map-btn {
   background-color: #2c3e50;
   color: white;
   border: none;
@@ -123,20 +126,12 @@ export default {
   font-size: 1.5em;
   cursor: pointer;
   border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+  transition: background-color 0.3s ease;
 }
 
-.settings-btn {
-    position: fixed;
-    top: 20px;
-    right: 80px;
-    z-index: 101;
-    background-color: #2c3e50;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    font-size: 1.5em;
-    cursor: pointer;
-    border-radius: 5px;
+.settings-btn:hover, .map-btn:hover {
+  background-color: #3a506b;
 }
 
 #bottom-bar {

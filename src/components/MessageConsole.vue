@@ -28,7 +28,7 @@ export default {
   bottom: 25px;
   left: 50%; /* Center horizontally */
   transform: translateX(-50%); /* Center horizontally */
-  width: 90%; /* Adjust width for mobile */
+  width: 100%; /* Adjust width for mobile */
   max-width: 400px; /* Max width for larger screens */
   height: auto; /* Auto height */
   display: flex;
@@ -49,14 +49,14 @@ export default {
 }
 
 /* Estilos específicos para cada tipo de mensaje */
-.message-catch { color: #50fa7b; }
+.message-catch { color: #50fa7b; font-style: bold;}
 .message-achievement { color: #ffd700; }
 .message-warning { color: #ff5555; }
 .message-system { color: #c0e5ee; font-style: italic; }
 
 /* Animaciones de transición */
 .message-fade-enter-active, .message-fade-leave-active {
-  transition: all 0.5s ease;
+  transition: all 0.3s ease;
 }
 .message-fade-enter-from, .message-fade-leave-to {
   opacity: 0;

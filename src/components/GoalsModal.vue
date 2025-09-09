@@ -4,17 +4,29 @@
       <span class="close" @click="close">&times;</span>
       <h2>Objetivos</h2>
       <div class="goals-container">
-        <div v-for="(goalList, difficulty) in goals" :key="difficulty" class="goal-category">
-          <h3>{{ difficulty }}</h3>
+        <div class="goal-category">
+          <h3>Objetivos Actuales</h3>
+          <p v-if="currentGoals.length === 0" class="no-goals-message">No hay objetivos activos en este momento. ¡Sigue jugando para desbloquear más!</p>
           <div class="goals-grid">
-            <div v-for="goal in goalList" :key="goal.id" class="goal" :class="{ completed: goal.completed }">
+            <div v-for="goal in currentGoals" :key="goal.id" class="goal">
               <div class="goal-description">{{ goal.description }}</div>
               <div class="goal-progress">
                 <div class="goal-progress-bar" :style="{ width: (goal.current / goal.target) * 100 + '%' }"></div>
               </div>
               <div class="goal-reward">Recompensa: ${{ goal.reward }}</div>
               <div class="goal-status">{{ goal.current }} / {{ goal.target }}</div>
-              <div v-if="goal.completed" class="goal-completed">¡Completado!</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="goal-category completed-goals-section">
+          <h3>Objetivos Completados</h3>
+          <p v-if="completedGoals.length === 0" class="no-goals-message">Aún no has completado ningún objetivo.</p>
+          <div class="goals-grid">
+            <div v-for="goal in completedGoals" :key="goal.id" class="goal completed">
+              <div class="goal-description">{{ goal.description }}</div>
+              <div class="goal-reward">Recompensa: ${{ goal.reward }}</div>
+              <div class="goal-completed">¡Completado!</div>
             </div>
           </div>
         </div>
@@ -33,12 +45,14 @@ export default {
     const store = useStore();
     const show = computed(() => store.state.modals.goals);
     const close = () => store.dispatch('toggleModal', 'goals');
-    const goals = computed(() => store.getters.getGoals);
+    const currentGoals = computed(() => store.getters.getGoals.current);
+    const completedGoals = computed(() => store.getters.getGoals.completed);
 
     return {
       show,
       close,
-      goals,
+      currentGoals,
+      completedGoals,
     };
   },
 };
@@ -185,6 +199,19 @@ h2 {
 
 .goal.completed .goal-completed {
   display: flex;
+}
+
+.no-goals-message {
+  text-align: center;
+  color: #ccc;
+  margin-top: 20px;
+  font-style: italic;
+}
+
+.completed-goals-section {
+  margin-top: 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 20px;
 }
 
 @media (max-width: 1024px) {
