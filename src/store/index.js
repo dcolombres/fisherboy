@@ -365,8 +365,8 @@ const store = createStore({
           goal.current += amount;
           if (goal.current >= goal.target) {
             goal.current = goal.target; // Cap current at target
-          }
-        };)
+          });
+        });
       }
     },
     completeGoal(state, goalId) {
