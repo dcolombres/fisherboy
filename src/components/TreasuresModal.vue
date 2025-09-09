@@ -63,7 +63,7 @@ export default {
   top: 0;
   left: 0;
   width: 100%;
-  height: 500px;
+  height: 100%;
   background-color: rgba(0, 0, 0, 0.8);
   z-index: 1000;
   justify-content: center;
@@ -80,7 +80,7 @@ export default {
   position: relative;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
   text-align: center;
-  max-height: 450px;
+  max-height: 80vh;
   overflow-y: auto;
 }
 
@@ -154,5 +154,32 @@ li {
   display: block;
   margin-top: 5px;
   color: #aaa;
+}
+
+@media (max-width: 1024px) {
+    .treasure-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    padding: 15px;
+    max-height: 90vh;
+  }
+
+  h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+  }
+
+  .treasure-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .treasure-card {
+    padding: 10px;
+  }
 }
 </style>

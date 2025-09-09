@@ -67,7 +67,7 @@ export default {
   color: white;
   position: relative;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-  max-height: 450px;
+  max-height: 80vh;
   overflow-y: auto;
 }
 
@@ -185,5 +185,38 @@ h2 {
 
 .goal.completed .goal-completed {
   display: flex;
+}
+
+@media (max-width: 1024px) {
+    .goals-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    padding: 15px;
+    max-height: 90vh;
+  }
+
+  h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+  }
+
+  .goals-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .goal {
+    padding: 15px;
+  }
+
+  .goal-description {
+    font-size: 1em;
+    min-height: auto;
+    margin-bottom: 10px;
+  }
 }
 </style>

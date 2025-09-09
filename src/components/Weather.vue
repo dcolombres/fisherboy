@@ -1,6 +1,6 @@
 <template>
   <div class="weather-display">
-    <p>Día {{ currentDay }} - {{ currentSeason }}, {{ temperature }}°C, {{ formattedGameTime }}</p>
+    <p>Día {{ currentDay }} - {{ seasonIcon }}, {{ temperature }}°C</p>
   </div>
 </template>
 
@@ -13,28 +13,8 @@ export default {
   setup() {
     const store = useStore();
 
-    const currentSeason = computed(() => {
-      const seasonMap = {
-        spring: 'Primavera',
-        summer: 'Verano',
-        autumn: 'Otoño',
-        winter: 'Invierno',
-      };
-      return seasonMap[store.getters.getCurrentSeason] || store.getters.getCurrentSeason;
-    });
-
     const temperature = computed(() => {
       return store.getters.getTemperature;
-    });
-
-    const formattedGameTime = computed(() => {
-      const totalMinutes = store.getters.getGameTime;
-      const hours = Math.floor(totalMinutes / 60);
-      const minutes = Math.floor(totalMinutes % 60);
-      const ampm = hours >= 12 ? 'PM' : 'AM';
-      const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
-      const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
-      return `${formattedHours}:${formattedMinutes} ${ampm}`;
     });
 
     const currentDay = computed(() => {
@@ -53,9 +33,7 @@ export default {
 
     return {
       currentDay,
-      currentSeason,
       temperature,
-      formattedGameTime,
       seasonIcon,
     };
   },

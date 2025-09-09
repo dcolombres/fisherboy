@@ -73,7 +73,7 @@ export default {
   color: white;
   position: relative;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-  max-height: 400px;
+  max-height: 80vh;
   overflow-y: auto;
 }
 
@@ -137,5 +137,29 @@ h2 {
 .locked {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    padding: 15px;
+    max-height: 90vh;
+  }
+
+  h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+  }
+
+  .equipment-section {
+    padding: 15px;
+  }
+
+  .equipment-items {
+    flex-direction: column;
+  }
+
+  .equipment-items button {
+    padding: 15px;
+  }
 }
 </style>

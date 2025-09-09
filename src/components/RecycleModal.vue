@@ -78,7 +78,7 @@ export default {
   color: white;
   position: relative;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-  max-height: 400px;
+  max-height: 80vh;
   overflow-y: auto;
 }
 
@@ -132,5 +132,32 @@ h2 {
   display: flex;
   justify-content: center;
   margin-top: 20px; /* Add some space above the button */
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    padding: 15px;
+    max-height: 90vh;
+  }
+
+  h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+  }
+
+  .trash-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .trash-info {
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .btn {
+    width: 100%;
+  }
 }
 </style>

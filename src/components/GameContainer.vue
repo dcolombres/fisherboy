@@ -1,5 +1,5 @@
 <template>
-  <div id="gameContainer">
+  <div id="gameContainer" @mousedown="handleMouseDown" @mouseup="handleMouseUp" @touchstart="handleTouchStart" @touchend="handleTouchEnd">
     <UIOverlay />
     <MarketModal />
     <StatsModal />
@@ -51,30 +51,45 @@ export default {
   },
   setup() {
     const store = useStore();
+    let pressTimer = null;
 
-    // Usar 'reactive' para el estado local del componente que no necesita ser global
-    const localState = reactive({
-      isFishing: false,
-      boatPosition: 50,
-    });
+    const fishFighting = computed(() => store.getters.getFishFighting);
 
-    // Acciones
+    const handleMouseDown = () => {
+      if (fishFighting.value) {
+        store.dispatch('fightFish');
+      } else {
+        pressTimer = setTimeout(() => {
+          store.dispatch('startDeepFishing');
+        }, 1000);
+      }
+    };
+
+    const handleMouseUp = () => {
+      clearTimeout(pressTimer);
+    };
+
+    const handleTouchStart = () => {
+      if (fishFighting.value) {
+        store.dispatch('fightFish');
+      } else {
+        pressTimer = setTimeout(() => {
+          store.dispatch('startDeepFishing');
+        }, 1000);
+      }
+    };
+
+    const handleTouchEnd = () => {
+      clearTimeout(pressTimer);
+    };
+
     const startFishing = () => {
       if (store.state.isFishing) return;
       store.dispatch('startFishing');
     };
 
-    const moveBoat = (direction) => {
-      store.dispatch('moveBoat', direction);
-    };
-
-    const handleKeyDown = (e) => {
-      store.dispatch('handleKeyDown', e.code);
-    };
-
     // Ciclo de vida
     onMounted(() => {
-      document.addEventListener('keydown', handleKeyDown);
       setInterval(() => {
         store.dispatch('gameTick');
       }, 1000);
@@ -82,9 +97,11 @@ export default {
     });
 
     return {
-      ...toRefs(localState),
+      handleMouseDown,
+      handleMouseUp,
+      handleTouchStart,
+      handleTouchEnd,
       startFishing,
-      moveBoat,
     };
   },
 };

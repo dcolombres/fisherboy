@@ -3,10 +3,11 @@
     <div class="modal-content">
       <span id="closeInstructions" class="close" @click="hideInstructions">×</span>
       <h2>Instrucciones</h2>
-      <p>Usa las flechas ← → para mover el barco</p>
-      <p>Usa la flecha ↑ para lanzar la caña</p>
-      <p>Presiona 'M' para el Mercado, 'S' para Estadísticas, 'G' para Objetivos, 'R' para Reciclaje, 'T' para Tesoros.</p>
-      <p>Presiona 'V' para Vender Pescado, 'D' para Dormir, 'E' para Equipamiento.</p>
+      <p>Toca la pantalla para una pesca corta.</p>
+      <p>Mantén presionado para una pesca profunda.</p>
+      <p>Si un pez grande pica, toca repetidamente la pantalla para atraparlo.</p>
+      <p>Usa los iconos en la parte inferior para navegar por el juego.</p>
+      <p>Usa el icono de engranaje para ver las estadísticas, objetivos y tesoros.</p>
     </div>
   </div>
 </template>
@@ -35,8 +36,8 @@ export default {
 
 <style scoped>
 /* Estilos para InstructionsModal */
-#instructionsModal {
-    display: none; /* Controlado por v-if */
+.modal {
+    display: flex; /* Changed from none to flex */
     position: fixed;
     top: 0;
     left: 0;
@@ -44,11 +45,12 @@ export default {
     height: 100%;
     background-color: rgba(0,0,0,0.7);
     z-index: 1000;
+    justify-content: center;
+    align-items: center;
 }
 
-#instructionsModal .modal-content {
+.modal-content {
     background-color: rgba(50,50,50,0.95);
-    margin: 15% auto;
     padding: 20px;
     width: 70%;
     max-width: 600px;
@@ -56,7 +58,7 @@ export default {
     color: white;
     position: relative;
     text-align: center;
-    max-height: 400px;
+    max-height: 80vh;
     overflow-y: auto;
 }
 
@@ -71,7 +73,9 @@ export default {
 
 .close {
     color: #aaa;
-    float: right;
+    position: absolute;
+    top: 15px;
+    right: 20px;
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
@@ -82,5 +86,22 @@ export default {
     color: #fff;
     text-decoration: none;
     cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    width: 90%;
+    padding: 15px;
+    max-height: 90vh;
+  }
+
+  h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+  }
+
+  p {
+    font-size: 1em;
+  }
 }
 </style>

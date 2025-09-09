@@ -4,7 +4,6 @@ const store = createStore({
   state() {
     return {
       // --- Game State ---
-      gameStarted: false, // New state variable
       money: 0,
       commonFishCount: 0,
       exoticFishCount: 0,
@@ -38,6 +37,10 @@ const store = createStore({
         totalRecycledValue: 0,
       },
       messages: [],
+      messageQueue: [],
+      isDisplayingMessage: false,
+      fishFighting: false,
+      fishToCatch: null,
       modals: {
         market: false,
         stats: false,
@@ -46,6 +49,7 @@ const store = createStore({
         treasures: false,
         instructions: false,
         equipment: false,
+        settings: false,
       },
       goals: {
         easy: [
@@ -100,24 +104,26 @@ const store = createStore({
       fishingRods: [
         { name: "Caña Básica", power: 1, speed: 1, catchRate: 0.6, price: 0 },
         { name: "Caña Profesional", power: 1.5, speed: 1.3, catchRate: 0.75, price: 5000 },
-        { name: "Caña Maestra", power: 2, speed: 1.6, catchRate: 0.9, price: 10 }
+        { name: "Caña Maestra", power: 2, speed: 1.6, catchRate: 0.9, price: 23000 }
       ],
       boats: [
         { name: "Barco Básico", speedMultiplier: 1, catchBonus: 1, price: 0, image: 'https://moroarte.com/games/boat.png' },
         { name: "Barco Avanzado", speedMultiplier: 1.5, catchBonus: 1.2, price: 25000, image: 'https://moroarte.com/games/botelvl1.png' },
-        { name: "Barco Profesional", speedMultiplier: 2, catchBonus: 1.5, price: 10, image: 'https://moroarte.com/games/botelvl2.png' }
+        { name: "Barco Profesional", speedMultiplier: 2, catchBonus: 1.5, price: 100000, image: 'https://moroarte.com/games/botelvl2.png' }
       ],
       trashTypes: [
         { name: "Botella de Plástico", recycleValue: 133 },
-        { name: "Red Vieja", recycleValue: 246 },
-        { name: "Lata de Conserva", recycleValue: 211 },
+        { name: "Red Vieja", recycleValue: 546 },
+        { name: "Lata de Conserva", recycleValue: 511 },
         { name: "Botella de Vidrio", recycleValue: 334 },
         { name: "Neumático de Goma", recycleValue: 1534 },
         { name: "Sedal de Pesca", recycleValue: 104 },
-        { name: "Chatarra de Metal", recycleValue: 150 },
+        { name: "Chatarra de Metal", recycleValue: 350 },
         { name: "Bolsa de Plástico", recycleValue: 56 },
         { name: "Caña Rota", recycleValue: 1444 },
-        { name: "Contenedor de Aceite", recycleValue: 2406 }
+        { name: "Contenedor de Aceite", recycleValue: 2406 },
+        { name: "Bebida Energizante", recycleValue: 10, energy: 20 },
+        { name: "Café", recycleValue: 5, energy: 10 },
       ],
       fishTypes: [
         // Common Fish
@@ -128,20 +134,20 @@ const store = createStore({
         { name: "Salmón", value: 578, color: "salmon", speed: 1.5, rarity: 0.1, isExotic: false, partOfDay: ['dawn', 'afternoon'] },
 
         // Uncommon Fish
-        { name: "Pez Globo", value: 1304, color: "yellow", speed: 1.8, rarity: 0.08, isExotic: false, partOfDay: ['noon'] },
-        { name: "Pez Espada", value: 1933, color: "gray", speed: 2.2, rarity: 0.05, isExotic: false, partOfDay: ['afternoon', 'night'] },
-        { name: "Lubina", value: 2550, color: "silver", speed: 1.6, rarity: 0.03, isExotic: false, partOfDay: ['dawn', 'night'] },
+        { name: "Pez Globo", value: 2304, color: "yellow", speed: 1.8, rarity: 0.08, isExotic: false, partOfDay: ['noon'] },
+        { name: "Pez Espada", value: 2933, color: "gray", speed: 2.2, rarity: 0.05, isExotic: false, partOfDay: ['afternoon', 'night'] },
+        { name: "Lubina", value: 3550, color: "silver", speed: 1.6, rarity: 0.03, isExotic: false, partOfDay: ['dawn', 'night'] },
 
         // Rare Fish
-        { name: "Pez Dorado", value: 2400, color: "gold", speed: 2, rarity: 0.02, isExotic: true, partOfDay: ['dawn', 'noon', 'afternoon', 'night'] },
-        { name: "Tiburón", value: 3500, color: "darkgray", speed: 2.5, rarity: 0.01, isExotic: true, partOfDay: ['night'] },
+        { name: "Pez Dorado", value: 4400, color: "gold", speed: 2, rarity: 0.02, isExotic: true, partOfDay: ['dawn', 'noon', 'afternoon', 'night'] },
+        { name: "Tiburón", value: 5500, color: "darkgray", speed: 2.5, rarity: 0.01, isExotic: true, partOfDay: ['night'] },
         { name: "Guardián del Coral", value: 15004, color: "#FF7F50", speed: 2.5, rarity: 0.008, requirements: { boat: 1, rod: 1 }, isExotic: true, partOfDay: ['noon'] },
         { name: "Cazador Nocturno", value: 22000, color: "#4682B4", speed: 2.6, rarity: 0.007, requirements: { boat: 2, rod: 1 }, isExotic: true, partOfDay: ['night'] },
         { name: "Pez Arcoíris", value: 35000, color: "#FF1493", speed: 2.8, rarity: 0.006, requirements: { boat: 1, rod: 2 }, isExotic: true, partOfDay: ['dawn'] },
 
         // Legendary Fish
-        { name: "Pez Espectral", value: 5500, color: "#f8f8f2", speed: 2.2, rarity: 0.005, isExotic: true, partOfDay: ['night'] },
-        { name: "Serpiente Marina", value: 7503, color: "#50fa7b", speed: 2.3, rarity: 0.004, isExotic: true, partOfDay: ['afternoon'] },
+        { name: "Pez Espectral", value: 8500, color: "#f8f8f2", speed: 2.2, rarity: 0.005, isExotic: true, partOfDay: ['night'] },
+        { name: "Serpiente Marina", value: 8503, color: "#50fa7b", speed: 2.3, rarity: 0.004, isExotic: true, partOfDay: ['afternoon'] },
         { name: "Medusa de Cristal", value: 19033, color: "#8be9fd", speed: 2.4, rarity: 0.003, isExotic: true, partOfDay: ['night'] },
         { name: "Pez Unicornio", value: 12345, color: "#bd93f9", speed: 2.5, rarity: 0.002, isExotic: true, partOfDay: ['dawn'] },
         { name: "Sirena Escamada", value: 45000, color: "#ff79c6", speed: 2.6, rarity: 0.001, isExotic: true, partOfDay: ['noon'] },
@@ -155,13 +161,13 @@ const store = createStore({
         { name: "Leviatán de las Profundidades", value: 455000, color: "#800080", speed: 4.0, rarity: 0.00004, requirements: { boat: 2, rod: 2 }, isExotic: true, partOfDay: ['night'] },
       ],
       treasureTypes: [
-        { name: "Perla", value: 1000, isCollectible: false, rarity: 0.1 },
+        { name: "Perla", value: 10000, isCollectible: false, rarity: 0.1 },
         { name: "Diamante", value: 190000, isCollectible: false, rarity: 0.01 },
         { name: "iPhone 7", value: 5090, isCollectible: true, rarity: 0.05 },
         { name: "Motorola", value: 2009, isCollectible: true, rarity: 0.06 },
-        { name: "Nokia 1100", value: 1080, isCollectible: true, rarity: 0.07 },
+        { name: "Nokia 1100", value: 1100, isCollectible: true, rarity: 0.07 },
         { name: "Reloj de oro", value: 15000, isCollectible: false, rarity: 0.02 },
-        { name: "Reloj de plata", value: 5500, isCollectible: false, rarity: 0.03 },
+        { name: "Reloj de plata", value: 8500, isCollectible: false, rarity: 0.03 },
         { name: "Reloj de cuco", value: 100, isCollectible: true, rarity: 0.08 },
         { name: "Corona de oro", value: 40000, isCollectible: false, rarity: 0.005 },
         { name: "Collar de oro", value: 17500, isCollectible: false, rarity: 0.015 },
@@ -173,16 +179,16 @@ const store = createStore({
         { name: "Anillo de compromiso", value: 3000, isCollectible: false, rarity: 0.025 },
         { name: "Daga ceremonial", value: 2000, isCollectible: true, rarity: 0.035 },
         { name: "Cáliz de plata", value: 4000, isCollectible: false, rarity: 0.02 },
-        { name: "Moneda de oro antigua", value: 1500, isCollectible: false, rarity: 0.05 },
+        { name: "Moneda de oro antigua", value: 51500, isCollectible: false, rarity: 0.05 },
         { name: "Mapa del tesoro", value: 0, isCollectible: true, rarity: 0.06 },
         { name: "Botella de ron añejo", value: 500, isCollectible: false, rarity: 0.07 },
         { name: "Cofre del tesoro vacío", value: 100, isCollectible: true, rarity: 0.1 },
         { name: "Esmeralda", value: 7500, isCollectible: false, rarity: 0.015 },
-        { name: "Rubí", value: 6000, isCollectible: false, rarity: 0.018 },
-        { name: "Zafiro", value: 5500, isCollectible: false, rarity: 0.019 },
-        { name: "Lingote de oro", value: 12000, isCollectible: false, rarity: 0.008 },
+        { name: "Rubí", value: 65000, isCollectible: false, rarity: 0.018 },
+        { name: "Zafiro", value: 55500, isCollectible: false, rarity: 0.019 },
+        { name: "Lingote de oro", value: 15000, isCollectible: false, rarity: 0.008 },
         { name: "Lingote de plata", value: 6000, isCollectible: false, rarity: 0.01 },
-        { name: "Candelabro de plata", value: 3500, isCollectible: false, rarity: 0.022 },
+        { name: "Candelabro de plata", value: 5500, isCollectible: false, rarity: 0.022 },
         { name: "Catalejo de latón", value: 4800, isCollectible: true, rarity: 0.06 },
         { name: "Brújula antigua", value: 1600, isCollectible: true, rarity: 0.07 },
         { name: "Sextante", value: 1200, isCollectible: true, rarity: 0.05 },
@@ -192,18 +198,18 @@ const store = createStore({
         { name: "Ammonite fosilizado", value: 1000, isCollectible: true, rarity: 0.04 },
         { name: "Trilobite fosilizado", value: 800, isCollectible: true, rarity: 0.05 },
         { name: "Ámbar con insecto", value: 1500, isCollectible: true, rarity: 0.035 },
-        { name: "Estatuilla de jade", value: 5000, isCollectible: true, rarity: 0.02 },
+        { name: "Estatuilla de jade", value: 55000, isCollectible: true, rarity: 0.02 },
         { name: "Máscara de oro inca", value: 15000, isCollectible: true, rarity: 0.007 },
         { name: "Sarcófago egipcio en miniatura", value: 10000, isCollectible: true, rarity: 0.01 },
-        { name: "Jarrón griego antiguo", value: 8000, isCollectible: true, rarity: 0.012 },
+        { name: "Jarrón griego antiguo", value: 58000, isCollectible: true, rarity: 0.012 },
         { name: "Moneda romana de plata", value: 1200, isCollectible: false, rarity: 0.04 },
-        { name: "Punta de flecha de obsidiana", value: 400, isCollectible: true, rarity: 0.08 },
+        { name: "Punta de flecha de obsidiana", value: 5400, isCollectible: true, rarity: 0.08 },
         { name: "Hacha de guerra vikinga", value: 3000, isCollectible: true, rarity: 0.025 },
         { name: "Escudo de bronce", value: 2000, isCollectible: true, rarity: 0.03 },
         { name: "Espada corta romana", value: 2500, isCollectible: true, rarity: 0.028 },
         { name: "Armadura de samurái en miniatura", value: 5000, isCollectible: true, rarity: 0.015 },
         { name: "Katana ornamental", value: 6000, isCollectible: true, rarity: 0.013 },
-        { name: "Shuriken de metal", value: 200, isCollectible: true, rarity: 0.09 },
+        { name: "Shuriken de metal", value: 5200, isCollectible: true, rarity: 0.09 },
         { name: "Pipa de la paz", value: 500, isCollectible: true, rarity: 0.07 },
         { name: "Tocado de plumas", value: 1000, isCollectible: true, rarity: 0.05 },
         { name: "Atrapasueños", value: 300, isCollectible: true, rarity: 0.08 },
@@ -253,11 +259,11 @@ const store = createStore({
         { name: "Guitarra en miniatura", value: 200, isCollectible: true, rarity: 0.09 },
         { name: "Violín en miniatura", value: 300, isCollectible: true, rarity: 0.08 },
         { name: "Piano de pulgar (Kalimba)", value: 180, isCollectible: true, rarity: 0.1 },
-        { name: "Gema brillante sin identificar", value: 2000, isCollectible: false, rarity: 0.03 },
-        { name: "Huevo de Fabergé falso", value: 100, isCollectible: true, rarity: 0.1 },
-        { name: "Estatua de la Libertad de recuerdo", value: 20, isCollectible: true, rarity: 0.18 },
-        { name: "Torre Eiffel de recuerdo", value: 20, isCollectible: true, rarity: 0.18 },
-        { name: "Big Ben de recuerdo", value: 20, isCollectible: true, rarity: 0.18 },
+        { name: "Gema brillante sin identificar", value: 42000, isCollectible: false, rarity: 0.03 },
+        { name: "Huevo de Fabergé falso", value: 4100, isCollectible: true, rarity: 0.1 },
+        { name: "Estatua de la Libertad de recuerdo", value: 520, isCollectible: true, rarity: 0.18 },
+        { name: "Torre Eiffel de recuerdo", value: 520, isCollectible: true, rarity: 0.18 },
+        { name: "Big Ben de recuerdo", value: 520, isCollectible: true, rarity: 0.18 },
       ],
     };
   },
@@ -280,11 +286,18 @@ const store = createStore({
     unlockRod(state, index) { state.unlockedRods[index] = true; },
     unlockBoat(state, index) { state.unlockedBoats[index] = true; },
     addMessage(state, message) {
-      const messageWithId = { ...message, id: Date.now() + Math.random() };
-      state.messages.unshift(messageWithId);
-      if (state.messages.length > 4) { // Limitar a 4 mensajes en pantalla
-        state.messages.pop();
+      state.messageQueue.push(message);
+      if (!state.isDisplayingMessage) {
+        this.dispatch('processMessageQueue');
       }
+    },
+    displayMessage(state, message) {
+      state.messages = [message];
+      state.isDisplayingMessage = true;
+    },
+    clearMessage(state) {
+      state.messages = [];
+      state.isDisplayingMessage = false;
     },
     addCaughtTrash(state, trash) { state.caughtTrashInventory.push(trash); },
     setCaughtTrashInventory(state, inventory) { state.caughtTrashInventory = inventory; },
@@ -334,8 +347,11 @@ const store = createStore({
         goal.completed = true;
       }
     },
-    setGameStarted(state, value) { // New mutation
-      state.gameStarted = value;
+    setFishFighting(state, value) {
+      state.fishFighting = value;
+    },
+    setFishToCatch(state, fish) {
+      state.fishToCatch = fish;
     },
   },
   actions: {
@@ -343,9 +359,23 @@ const store = createStore({
       commit('addMessage', { text: '¡Bienvenido! Usa las flechas para jugar.', type: 'system' });
     },
     showRandomTip({ commit, state }) {
-      const randomIndex = Math.floor(Math.random() * state.tips.length);
-      const tip = state.tips[randomIndex];
-      commit('addMessage', { text: `Consejo: ${tip}`, type: 'tip' });
+      if (state.messageQueue.length === 0 && !state.isDisplayingMessage) {
+        const randomIndex = Math.floor(Math.random() * state.tips.length);
+        const tip = state.tips[randomIndex];
+        commit('addMessage', { text: `Consejo: ${tip}`, type: 'tip' });
+      }
+    },
+    processMessageQueue({ commit, state, dispatch }) {
+      if (state.messageQueue.length > 0) {
+        const message = state.messageQueue.shift();
+        commit('displayMessage', message);
+        setTimeout(() => {
+          commit('clearMessage');
+          dispatch('processMessageQueue');
+        }, 2000);
+      } else {
+        dispatch('showRandomTip');
+      }
     },
     updateClimate({ commit, state }) {
         const isNight = state.gameTime < 360 || state.gameTime > 1080;
@@ -412,19 +442,24 @@ const store = createStore({
       }
     },
     startFishing({ commit, state }) {
-      if (state.isFishing || state.energy < 15) return;
+      if (state.isFishing || state.energy < 10) return;
       commit('setIsFishing', true);
       commit('setFishingDepth', 'normal');
-      commit('setEnergy', state.energy - 15);
+      commit('setEnergy', state.energy - 10);
       commit('addMessage', { text: 'Lanzando caña...', type: 'system' });
       setTimeout(() => {
         const boat = state.boats[state.currentBoat];
         const rod = state.fishingRods[state.currentRod];
         if (Math.random() < 0.3) {
           const trashItem = state.trashTypes[Math.floor(Math.random() * state.trashTypes.length)];
-          commit('addCaughtTrash', trashItem);
-          commit('incrementTrashCount');
-          commit('addMessage', { text: `¡Has pescado ${trashItem.name}!`, type: 'catch' });
+          if (trashItem.energy) {
+            commit('setEnergy', state.energy + trashItem.energy);
+            commit('addMessage', { text: `¡Has encontrado ${trashItem.name}! (+${trashItem.energy} de energía)`, type: 'catch' });
+          } else {
+            commit('addCaughtTrash', trashItem);
+            commit('incrementTrashCount');
+            commit('addMessage', { text: `¡Has pescado ${trashItem.name}!`, type: 'catch' });
+          }
         } else {
           if (Math.random() * boat.catchBonus < rod.catchRate) {
             const availableFish = state.fishTypes.filter(fish => {
@@ -446,6 +481,11 @@ const store = createStore({
             }
 
             if (fishToCatch) {
+              if (fishToCatch.value > 1000 || fishToCatch.isExotic) {
+                commit('setFishToCatch', fishToCatch);
+                commit('setFishFighting', true);
+                commit('addMessage', { text: `¡Un pez grande ha picado! ¡Toca repetidamente para pescarlo!`, type: 'warning' });
+              } else {
                 const value = Math.floor(fishToCatch.value * (state.isNight ? 1.5 : 1));
                 commit('addMessage', { text: `¡Has atrapado un ${fishToCatch.name}! (${value})`, type: 'catch' });
                 commit('updateFishingStats', { fish: fishToCatch, value });
@@ -456,6 +496,7 @@ const store = createStore({
                     commit('incrementCommonFishCount');
                 }
                 commit('addMoney', value);
+              }
             } else {
                 commit('addMessage', { text: 'No picó nada...', type: 'system' });
             }
@@ -468,10 +509,10 @@ const store = createStore({
       }, 2000 / boat.speedMultiplier);
     },
     startDeepFishing({ commit, state }) {
-      if (state.isFishing || state.energy < 30) return; // Increased energy cost
+      if (state.isFishing || state.energy < 20) return; // Increased energy cost
       commit('setIsFishing', true);
       commit('setFishingDepth', 'deep');
-      commit('setEnergy', state.energy - 30); // Increased energy cost
+      commit('setEnergy', state.energy - 20); // Increased energy cost
       commit('addMessage', { text: 'Lanzando caña a las profundidades...', type: 'system' });
       setTimeout(() => {
         const boat = state.boats[state.currentBoat];
@@ -512,9 +553,14 @@ const store = createStore({
           }
         } else if (Math.random() < 0.2) { // Lower chance of trash
           const trashItem = state.trashTypes[Math.floor(Math.random() * state.trashTypes.length)];
-          commit('addCaughtTrash', trashItem);
-          commit('incrementTrashCount');
-          commit('addMessage', { text: `¡Has pescado ${trashItem.name}!`, type: 'catch' });
+          if (trashItem.energy) {
+            commit('setEnergy', state.energy + trashItem.energy);
+            commit('addMessage', { text: `¡Has encontrado ${trashItem.name}! (+${trashItem.energy} de energía)`, type: 'catch' });
+          } else {
+            commit('addCaughtTrash', trashItem);
+            commit('incrementTrashCount');
+            commit('addMessage', { text: `¡Has pescado ${trashItem.name}!`, type: 'catch' });
+          }
         } else {
           if (Math.random() * boat.catchBonus < rod.catchRate) {
             const availableFish = state.fishTypes.map(fish => {
@@ -541,6 +587,11 @@ const store = createStore({
             }
 
             if (fishToCatch) {
+              if (fishToCatch.value > 1000 || fishToCatch.isExotic) {
+                commit('setFishToCatch', fishToCatch);
+                commit('setFishFighting', true);
+                commit('addMessage', { text: `¡Un pez grande ha picado! ¡Toca repetidamente para pescarlo!`, type: 'warning' });
+              } else {
                 const value = Math.floor(fishToCatch.value * (state.isNight ? 1.5 : 1));
                 commit('addMessage', { text: `¡Has atrapado un ${fishToCatch.name}! (${value})`, type: 'catch' });
                 commit('updateFishingStats', { fish: fishToCatch, value });
@@ -551,6 +602,7 @@ const store = createStore({
                     commit('incrementCommonFishCount');
                 }
                 commit('addMoney', value);
+              }
             } else {
                 commit('addMessage', { text: 'No picó nada...', type: 'system' });
             }
@@ -562,36 +614,47 @@ const store = createStore({
         commit('setFishingDepth', null);
       }, 2000 / boat.speedMultiplier);
     },
-    selectRod({ commit, state }, rodIndex) {
-        const rod = state.fishingRods[rodIndex];
-        if (state.unlockedRods[rodIndex]) {
-            commit('setCurrentRod', rodIndex);
+    fightFish({ commit, state }) {
+      if (state.fishFighting) {
+        const fish = state.fishToCatch;
+        const value = Math.floor(fish.value * (state.isNight ? 1.5 : 1));
+        commit('addMessage', { text: `¡Has atrapado un ${fish.name}! (${value})`, type: 'catch' });
+        commit('updateFishingStats', { fish, value });
+        commit('addCaughtFish', { ...fish, value });
+        if (fish.isExotic) {
+            commit('incrementExoticFishCount');
+        } else {
+            commit('incrementCommonFishCount');
         }
-        else if (state.money >= rod.price) {
+        commit('addMoney', value);
+        commit('setFishFighting', false);
+        commit('setFishToCatch', null);
+      }
+    },
+    buyRod({ commit, state }, rodIndex) {
+        const rod = state.fishingRods[rodIndex];
+        if (state.money >= rod.price) {
             commit('spendMoney', rod.price);
             commit('unlockRod', rodIndex);
             commit('addMessage', { text: `¡Has comprado la ${rod.name}!`, type: 'achievement' });
         }
     },
-    selectBoat({ commit, state }, boatIndex) {
+    buyBoat({ commit, state }, boatIndex) {
         const boat = state.boats[boatIndex];
-        if (state.unlockedBoats[boatIndex]) {
-            commit('setCurrentBoat', boatIndex);
-        }
-        else if (state.money >= boat.price) {
+        if (state.money >= boat.price) {
             commit('spendMoney', boat.price);
             commit('unlockBoat', boatIndex);
             commit('addMessage', { text: `¡Has comprado el ${boat.name}!`, type: 'achievement' });
         }
     },
-    sellAllFish({ commit, state, dispatch }) {
-        const totalValue = state.caughtFishInventory.reduce((sum, item) => sum + item.value, 0);
-        if (totalValue > 0) {
-            commit('addMoney', totalValue);
-            commit('updateGoalProgress', { type: 'sellFish', amount: state.caughtFishInventory.length }); // Update goal progress
-            commit('setCaughtFishInventory', []);
-            commit('addMessage', { text: `Vendiste pescado por ${totalValue}.`, type: 'system' });
-            dispatch('checkAndAwardGoals'); // Check and award goals after selling
+    selectRod({ commit, state }, rodIndex) {
+        if (state.unlockedRods[rodIndex]) {
+            commit('setCurrentRod', rodIndex);
+        }
+    },
+    selectBoat({ commit, state }, boatIndex) {
+        if (state.unlockedBoats[boatIndex]) {
+            commit('setCurrentBoat', boatIndex);
         }
     },
     checkAndAwardGoals({ commit, state }) {
@@ -623,10 +686,7 @@ const store = createStore({
         }
     },
     goToSleep({ commit, dispatch, state }) {
-        let sleepCost = 1500;
-        if (state.currentDay > 5) {
-            sleepCost += (state.currentDay - 5) * 1000;
-        }
+        const sleepCost = 1400 + state.currentDay * 100;
 
         if (state.money >= sleepCost) {
             commit('spendMoney', sleepCost);
@@ -683,7 +743,8 @@ const store = createStore({
     getCurrentSeason: (state) => state.currentSeason,
     getTemperature: (state) => state.temperature,
     getFishingDepth: (state) => state.fishingDepth,
-    getGameStarted: (state) => state.gameStarted, // New getter
+    getFishFighting: (state) => state.fishFighting,
+    getFishToCatch: (state) => state.fishToCatch,
   },
 });
 

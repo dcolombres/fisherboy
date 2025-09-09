@@ -71,7 +71,7 @@ export default {
   color: white;
   position: relative;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-  max-height: 400px;
+  max-height: 80vh;
   overflow-y: auto;
 }
 
@@ -136,5 +136,35 @@ h3 {
 
 .fish-stat-count {
   margin-bottom: 5px;
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    padding: 15px;
+    max-height: 90vh;
+  }
+
+  h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+  }
+
+  h3 {
+    font-size: 1.2em;
+    margin: 15px 0 10px;
+  }
+
+  .stats-summary {
+    font-size: 1em;
+    padding: 10px;
+  }
+
+  .stats-grid {
+    gap: 10px;
+  }
+
+  .fish-stat {
+    padding: 10px;
+  }
 }
 </style>

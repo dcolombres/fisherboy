@@ -1,10 +1,10 @@
 <template>
   <div id="message-console">
-    <transition-group name="message-fade" tag="div">
-      <p v-for="message in messages" :key="message.id" class="message" :class="`message-${message.type}`">
-        {{ message.text }}
+    <transition name="message-fade">
+      <p v-if="messages.length > 0" :key="messages[0].id" class="message" :class="`message-${messages[0].type}`">
+        {{ messages[0].text }}
       </p>
-    </transition-group>
+    </transition>
   </div>
 </template>
 
@@ -25,17 +25,20 @@ export default {
 <style scoped>
 #message-console {
   position: fixed;
-  bottom: 20px;
-  left: 20px;
-  width: 350px;
-  height: 100%;
+  bottom: 25px;
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Center horizontally */
+  width: 90%; /* Adjust width for mobile */
+  max-width: 400px; /* Max width for larger screens */
+  height: auto; /* Auto height */
   display: flex;
-  flex-direction: column; /* Los mensajes nuevos aparecen abajo y empujan los viejos hacia arriba */
-  pointer-events: none; /* Permite hacer clic a través de la consola */
+  flex-direction: column-reverse; /* New messages appear at the bottom */
+  pointer-events: none; /* Allows clicking through the console */
+  align-items: center; /* Center the message horizontally */
 }
 
 .message {
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0);
   color: white;
   padding: 8px 12px;
   border-radius: 6px;
@@ -57,6 +60,6 @@ export default {
 }
 .message-fade-enter-from, .message-fade-leave-to {
   opacity: 0;
-  transform: translateX(-20px);
+  transform: translateY(-20px);
 }
 </style>
