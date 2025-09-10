@@ -4,10 +4,10 @@
       <span class="close" @click="close">&times;</span>
       <h2>Configuración</h2>
       <div class="settings-buttons">
-        <button class="btn btn-primary" @click="openModal('stats')">Estadísticas</button>
-        <button class="btn btn-primary" @click="openModal('goals')">Objetivos</button>
         <button class="btn btn-primary" @click="openModal('instructions')">Instrucciones</button>
+        <button class="btn btn-primary" @click="openModal('goals')">Objetivos</button>
         <button class="btn btn-primary" @click="openModal('treasures')">Tesoros</button>
+        <button class="btn btn-primary" @click="openModal('stats')">Estadísticas</button>
       </div>
     </div>
   </div>

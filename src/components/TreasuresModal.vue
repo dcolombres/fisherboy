@@ -79,7 +79,6 @@ export default {
   color: white;
   position: relative;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-  text-align: center;
   max-height: 80vh;
   overflow-y: auto;
 }
@@ -101,43 +100,52 @@ export default {
 }
 
 h2 {
+  text-align: center;
   margin-bottom: 20px;
   color: #ffd700;
 }
 
-p {
-  font-size: 1.2em;
-  line-height: 1.6;
-}
-
-ul {
-  list-style: none;
-  padding: 0;
-}
-
-li {
-  background-color: #333;
-  margin: 5px 0;
-  padding: 10px;
-  border-radius: 5px;
-}
 .treasures-container {
   overflow-y: auto;
 }
+
 .treasure-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 20px;
 }
 
 .treasure-card {
-  background-color: #333;
-  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
   border-radius: 10px;
+  position: relative;
+  transition: transform 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: center;
+}
+
+.treasure-card:hover {
+  transform: translateY(-5px);
+}
+
+.treasure-card h3 {
+  font-size: 1.1em;
+  margin-bottom: 10px;
+  color: #ffd700;
+}
+
+.treasure-card p {
+  font-size: 1em;
+  line-height: 1.4;
+  margin-bottom: 10px;
 }
 
 .treasure-status {
   margin-top: 10px;
+  font-size: 0.9em;
 }
 
 .found-indicator {
@@ -153,13 +161,7 @@ li {
 .treasure-count {
   display: block;
   margin-top: 5px;
-  color: #aaa;
-}
-
-@media (max-width: 1024px) {
-    .treasure-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+  color: #ccc;
 }
 
 @media (max-width: 768px) {
@@ -175,12 +177,12 @@ li {
   }
 
   .treasure-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 15px;
   }
 
   .treasure-card {
-    padding: 10px;
+    padding: 15px;
   }
 }
 </style>

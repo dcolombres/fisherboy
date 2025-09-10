@@ -1,10 +1,10 @@
 <template>
   <div id="message-console">
-    <transition name="message-fade">
-      <p v-if="messages.length > 0" :key="messages[0].id" class="message" :class="`message-${messages[0].type}`">
-        {{ messages[0].text }}
+    <transition-group name="message-list" tag="div">
+      <p v-for="message in messages" :key="message.id" class="message" :class="`message-${message.type}`">
+        {{ message.text }}
       </p>
-    </transition>
+    </transition-group>
   </div>
 </template>
 
@@ -25,41 +25,49 @@ export default {
 <style scoped>
 #message-console {
   position: fixed;
-  bottom: 25px;
-  left: 50%; /* Center horizontally */
-  transform: translateX(-50%); /* Center horizontally */
-  width: 100%; /* Adjust width for mobile */
-  max-width: 400px; /* Max width for larger screens */
-  height: auto; /* Auto height */
+  bottom: 80px; /* Position above the bottom bar */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-height: 150px;
   display: flex;
-  flex-direction: column-reverse; /* New messages appear at the bottom */
-  pointer-events: none; /* Allows clicking through the console */
-  align-items: center; /* Center the message horizontally */
+  flex-direction: column-reverse;
+  align-items: center;
+  pointer-events: none;
+  z-index: 999;
 }
 
 .message {
-  background: rgba(0, 0, 0, 0);
+  background: transparent;
   color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
-  margin-top: 8px;
-  font-size: 0.9em;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  padding: 5px 10px;
+  border-radius: 0px;
+  margin-bottom: 5px;
+  font-size: 1.2em;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.7);
   transition: all 0.5s ease;
 }
 
-/* Estilos específicos para cada tipo de mensaje */
-.message-catch { color: #50fa7b; font-style: bold;}
+.message-catch { color: #50fa7b; }
 .message-achievement { color: #ffd700; }
 .message-warning { color: #ff5555; }
-.message-system { color: #c0e5ee; font-style: italic; }
+.message-system { color: #8be9fd; }
+.message-tip { color: #bd93f9; }
 
-/* Animaciones de transición */
-.message-fade-enter-active, .message-fade-leave-active {
-  transition: all 0.3s ease;
+.message-list-enter-active,
+.message-list-leave-active {
+  transition: all 0.5s ease;
 }
-.message-fade-enter-from, .message-fade-leave-to {
+.message-list-enter-from,
+.message-list-leave-to {
   opacity: 0;
-  transform: translateY(-20px);
+  transform: translateY(30px);
+}
+
+@media (max-width: 768px) {
+  #message-console {
+    width: calc(100% - 40px);
+    bottom: 70px;
+  }
 }
 </style>

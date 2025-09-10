@@ -19,6 +19,7 @@ const store = createStore({
       isFishing: false,
       fishingDepth: null, // 'normal', 'deep'
       boatPosition: 50,
+      boatPositionY: 45,
       currentRod: 0,
       currentBoat: 0,
       unlockedRods: [true, false, false],
@@ -37,8 +38,6 @@ const store = createStore({
         totalRecycledValue: 0,
       },
       messages: [],
-      messageQueue: [],
-      isDisplayingMessage: false,
       fishFighting: false,
       fishToCatch: null,
       modals: {
@@ -50,12 +49,21 @@ const store = createStore({
         instructions: false,
         equipment: false,
         settings: false,
+        map: false,
       },
+      currentZone: 1,
+      zones: [
+        { id: 1, name: "Lago Clemente", cost: 0, unlocked: true },
+        { id: 2, name: "Lago Mafalda", cost: 10000, unlocked: false },
+        { id: 3, name: "Mar Diogenes", cost: 20000, unlocked: false },
+        { id: 4, name: "Mar Profundo de Boogie el aceitoso", cost: 30000, unlocked: false },
+        { id: 5, name: "Laguna Tía Vicenta", cost: 40000, unlocked: false },
+        { id: 6, name: "Laguna Patoruzú", cost: 50000, unlocked: false },
+      ],
       currentGoals: [],
       completedGoals: [],
       goalDefinitions: {
         // Tutorial/Early Game Goals
-        'goal_sell_1_fish': { id: 'goal_sell_1_fish', description: "Vende 1 pez", type: "sellFish", target: 1, reward: 50, category: "tutorial" },
         'goal_catch_10_common_fish': { id: 'goal_catch_10_common_fish', description: "Pesca 10 peces comunes", type: "catchCommonFish", target: 10, reward: 100, category: "tutorial" },
         'goal_earn_500_money': { id: 'goal_earn_500_money', description: "Gana $500", type: "earnMoney", target: 500, reward: 200, category: "tutorial" },
         'goal_buy_pro_rod': { id: 'goal_buy_pro_rod', description: "Compra la Caña Profesional", type: "buyRod", target: 1, reward: 500, category: "equipment" },
@@ -92,33 +100,33 @@ const store = createStore({
         'goal_find_1_treasure': { id: 'goal_find_1_treasure', description: "Encuentra 1 tesoro", type: "findTreasure", target: 1, reward: 1000, category: "treasure" },
         'goal_find_5_treasures': { id: 'goal_find_5_treasures', description: "Encuentra 5 tesoros", type: "findTreasure", target: 5, reward: 5000, category: "treasure" },
         'goal_find_10_treasures': { id: 'goal_find_10_treasures', description: "Encuentra 10 tesoros", type: "findTreasure", target: 10, reward: 15000, category: "treasure" },
-        'goal_find_all_unique_treasures': { id: 'goal_find_all_unique_treasures', description: "Encuentra todos los tesoros únicos", type: "findAllUniqueTreasures", target: 1, reward: 50000, category: "treasure" },
+        'goal_find_all_unique_treasures': { id: 'goal_find_all_unique_treasures', description: "Encuentra todos los tesoros únicos", type: "findAllUniqueTreasures", target: 81, reward: 50000, category: "treasure" },
 
         // Equipment Goals
         'goal_buy_master_rod': { id: 'goal_buy_master_rod', description: "Compra la Caña Maestra", type: "buyRod", target: 2, reward: 2000, category: "equipment" },
         'goal_buy_pro_boat': { id: 'goal_buy_pro_boat', description: "Compra el Barco Profesional", type: "buyBoat", target: 2, reward: 5000, category: "equipment" },
       },
       tips: [
-        "Para pescar un Tiburón, probá pescar de noche.",
-        "Los tesoros solo se encuentran en las profundidades del mar, ¡necesitarás el Barco Profesional!",
-        "La pesca profunda consume más energía, pero las recompensas pueden ser mayores.",
-        "No te olvides de vender tu pescado en el mercado para ganar dinero.",
-        "Reciclar la basura te dará algo de dinero extra.",
-        "Mejorátu caña y tu barco para pescar peces más raros y valiosos.",
-        "Algunos peces solo aparecen en ciertas partes del día.",
-        "Ir a dormir restaurará toda tu energía.",
-        "Podés silenciar la música, peor la vida es mejor con melodías...",
-        "¡Convertite en un maestro pescador completando todos los logros!",
-        "Podés pescar en cualquier lugar del mapa, ¡pero algunos lugares son mejores que otros!",
-        "La paciencia es una virtud, especialmente cuando se pesca.",
-        "Consultá los objetivos para obtener recompensas adicionales.",
-        "El valor de los peces exóticos es mucho mayor que el de los comunes.",
-        "No te desanimes si pescás mucha basura al principio, seguí intentándolo!",
-        "Ahorrá dinero para comprar el mejor equipo...",
-        "Los peces legendarios son extremadamente raros, ¡serás un verdadero maestro si atrapas uno!",
-        "Prestá atención a la hora del día, ¡algunos peces solo pican al amanecer o al atardecer!",
-        "La pesca es una excelente manera de relajarse y disfrutar de la naturaleza.",
-        "¡Compartí tus logros con tus amigos y compite para ver quién es el mejor pescador!"
+        "Los tiburones son criaturas nocturnas. Intenta pescar de noche para tener la oportunidad de atrapar uno.",
+        "Los tesoros más valiosos se esconden en las profundidades. Necesitarás el Barco Profesional para llegar a ellos.",
+        "La pesca en aguas profundas consume más energía, pero las recompensas valen la pena el esfuerzo.",
+        "El mercado es tu mejor amigo. Vende tu pescado allí para ganar dinero y mejorar tu equipo.",
+        "No subestimes el valor de la basura. Reciclarla te dará un ingreso extra constante.",
+        "Una mejor caña y un barco más resistente te permitirán atrapar peces más raros y valiosos.",
+        "El tiempo es clave. Algunos peces solo aparecen en momentos específicos del día.",
+        "Descansar es esencial. Dormir restaurará toda tu energía para un nuevo día de pesca.",
+        "La música le da un toque especial a la vida, pero puedes silenciarla si prefieres la tranquilidad del mar.",
+        "Conviértete en una leyenda de la pesca completando todos los logros del juego.",
+        "Explora el mapa. Hay muchos lugares para pescar, pero algunos son más fructíferos que otros.",
+        "La paciencia es la clave del éxito en la pesca. No te rindas, y serás recompensado.",
+        "No pierdas de vista tus objetivos. Completarlos te dará recompensas adicionales y te guiará en tu aventura.",
+        "Los peces exóticos son una fuente de ingresos mucho mayor que los comunes. ¡Ve por ellos!",
+        "Al principio es normal pescar basura. No te desanimes, ¡la práctica hace al maestro!",
+        "Invierte en tu equipo. Ahorra dinero para comprar las mejores herramientas y verás la diferencia.",
+        "Los peces legendarios son el mayor desafío. Atrapa uno y tu nombre será recordado para siempre.",
+        "El amanecer y el atardecer son momentos mágicos para pescar. ¡Aprovéchalos!",
+        "Disfruta del viaje. La pesca es una oportunidad para relajarse y conectar con la naturaleza.",
+        "Compite con tus amigos. Comparte tus logros y demuestra quién es el mejor pescador."
       ],
       // --- Game Configuration ---
       fishingRods: [
@@ -146,144 +154,85 @@ const store = createStore({
         { name: "Café", recycleValue: 5, energy: 10 },
       ],
       fishTypes: [
-        // Common Fish
-        { name: "Sardina", value: 58, color: "silver", speed: 1, rarity: 0.4, isExotic: false, partOfDay: ['dawn', 'noon', 'afternoon', 'night'] },
-        { name: "Pez Payaso", value: 83, color: "orange", speed: 1.4, rarity: 0.3, isExotic: false, partOfDay: ['dawn', 'noon', 'afternoon'] },
-        { name: "Lenguado", value: 153, color: "tan", speed: 1.3, rarity: 0.2, isExotic: false, partOfDay: ['noon', 'afternoon'] },
-        { name: "Atún", value: 105, color: "darkblue", speed: 1.2, rarity: 0.15, isExotic: false, partOfDay: ['dawn', 'noon', 'afternoon', 'night'] },
-        { name: "Salmón", value: 578, color: "salmon", speed: 1.5, rarity: 0.1, isExotic: false, partOfDay: ['dawn', 'afternoon'] },
+        // Zone 1: Lago Clemente
+        { name: "Sardina", value: 58, color: "silver", speed: 1, rarity: 0.4, isExotic: false, partOfDay: ['dawn', 'noon', 'afternoon', 'night'], zone: 1 },
+        { name: "Pez Payaso", value: 83, color: "orange", speed: 1.4, rarity: 0.3, isExotic: false, partOfDay: ['dawn', 'noon', 'afternoon'], zone: 1 },
+        { name: "Lenguado", value: 153, color: "tan", speed: 1.3, rarity: 0.2, isExotic: false, partOfDay: ['noon', 'afternoon'], zone: 1 },
+        { name: "Atún", value: 105, color: "darkblue", speed: 1.2, rarity: 0.15, isExotic: false, partOfDay: ['dawn', 'noon', 'afternoon', 'night'], zone: 1 },
+        { name: "Salmón", value: 578, color: "salmon", speed: 1.5, rarity: 0.1, isExotic: false, partOfDay: ['dawn', 'afternoon'], zone: 1 },
 
-        // Uncommon Fish
-        { name: "Pez Globo", value: 2304, color: "yellow", speed: 1.8, rarity: 0.08, isExotic: false, partOfDay: ['noon'] },
-        { name: "Pez Espada", value: 2933, color: "gray", speed: 2.2, rarity: 0.05, isExotic: false, partOfDay: ['afternoon', 'night'] },
-        { name: "Lubina", value: 3550, color: "silver", speed: 1.6, rarity: 0.03, isExotic: false, partOfDay: ['dawn', 'night'] },
+        // Zone 2: Lago Mafalda
+        { name: "Pez Globo", value: 2304, color: "yellow", speed: 1.8, rarity: 0.08, isExotic: false, partOfDay: ['noon'], zone: 2 },
+        { name: "Pez Espada", value: 2933, color: "gray", speed: 2.2, rarity: 0.05, isExotic: false, partOfDay: ['afternoon', 'night'], zone: 2 },
+        { name: "Lubina", value: 3550, color: "silver", speed: 1.6, rarity: 0.03, isExotic: false, partOfDay: ['dawn', 'night'], zone: 2 },
 
-        // Rare Fish
-        { name: "Pez Dorado", value: 4400, color: "gold", speed: 2, rarity: 0.02, isExotic: true, partOfDay: ['dawn', 'noon', 'afternoon', 'night'] },
-        { name: "Tiburón", value: 5500, color: "darkgray", speed: 2.5, rarity: 0.01, isExotic: true, partOfDay: ['night'] },
-        { name: "Guardián del Coral", value: 15004, color: "#FF7F50", speed: 2.5, rarity: 0.008, requirements: { boat: 1, rod: 1 }, isExotic: true, partOfDay: ['noon'] },
-        { name: "Cazador Nocturno", value: 22000, color: "#4682B4", speed: 2.6, rarity: 0.007, requirements: { boat: 2, rod: 1 }, isExotic: true, partOfDay: ['night'] },
-        { name: "Pez Arcoíris", value: 35000, color: "#FF1493", speed: 2.8, rarity: 0.006, requirements: { boat: 1, rod: 2 }, isExotic: true, partOfDay: ['dawn'] },
+        // Zone 3: Mar Diogenes
+        { name: "Pez Dorado", value: 4400, color: "gold", speed: 2, rarity: 0.02, isExotic: true, partOfDay: ['dawn', 'noon', 'afternoon', 'night'], zone: 3 },
+        { name: "Tiburón", value: 5500, color: "darkgray", speed: 2.5, rarity: 0.01, isExotic: true, partOfDay: ['night'], zone: 3 },
 
-        // Legendary Fish
-        { name: "Pez Espectral", value: 8500, color: "#f8f8f2", speed: 2.2, rarity: 0.005, isExotic: true, partOfDay: ['night'] },
-        { name: "Serpiente Marina", value: 8503, color: "#50fa7b", speed: 2.3, rarity: 0.004, isExotic: true, partOfDay: ['afternoon'] },
-        { name: "Medusa de Cristal", value: 19033, color: "#8be9fd", speed: 2.4, rarity: 0.003, isExotic: true, partOfDay: ['night'] },
-        { name: "Pez Unicornio", value: 12345, color: "#bd93f9", speed: 2.5, rarity: 0.002, isExotic: true, partOfDay: ['dawn'] },
-        { name: "Sirena Escamada", value: 45000, color: "#ff79c6", speed: 2.6, rarity: 0.001, isExotic: true, partOfDay: ['noon'] },
-        { name: "Mini Kraken", value: 38500, color: "#8b0000", speed: 2.7, rarity: 0.0008, isExotic: true, partOfDay: ['night'] },
-        { name: "Pez Fénix", value: 42000, color: "#ff5555", speed: 2.8, rarity: 0.0006, isExotic: true, partOfDay: ['dawn'] },
-        { name: "Quimera Luminosa", value: 75000, color: "#50fa7b", speed: 3.0, rarity: 0.0004, isExotic: true, partOfDay: ['afternoon'] },
-        { name: "Leviatán Abisal", value: 58000, color: "#1e0f3d", speed: 3.2, rarity: 0.0002, isExotic: true, partOfDay: ['night'] },
-        { name: "Pez Dragón Celestial", value: 74500, color: "#4a90e2", speed: 3.5, rarity: 0.0001, isExotic: true, partOfDay: ['dawn'] },
-        { name: "Emperador del Océano", value: 130000, color: "#00008B", speed: 3.7, rarity: 0.00008, requirements: { boat: 2, rod: 2 }, isExotic: true, partOfDay: ['noon'] },
-        { name: "Pez Ancestral", value: 720333, color: "#4B0082", speed: 3.8, rarity: 0.00006, requirements: { boat: 2, rod: 2 }, isExotic: true, partOfDay: ['afternoon'] },
-        { name: "Leviatán de las Profundidades", value: 455000, color: "#800080", speed: 4.0, rarity: 0.00004, requirements: { boat: 2, rod: 2 }, isExotic: true, partOfDay: ['night'] },
+        // Zone 4: Mar Profundo de Boogie el aceitoso
+        { name: "Guardián del Coral", value: 15004, color: "#FF7F50", speed: 2.5, rarity: 0.008, requirements: { boat: 1, rod: 1 }, isExotic: true, partOfDay: ['noon'], zone: 4 },
+        { name: "Cazador Nocturno", value: 22000, color: "#4682B4", speed: 2.6, rarity: 0.007, requirements: { boat: 2, rod: 1 }, isExotic: true, partOfDay: ['night'], zone: 4 },
+
+        // Zone 5: Laguna Tía Vicenta
+        { name: "Pez Arcoíris", value: 35000, color: "#FF1493", speed: 2.8, rarity: 0.006, requirements: { boat: 1, rod: 2 }, isExotic: true, partOfDay: ['dawn'], zone: 5 },
+        { name: "Pez Espectral", value: 8500, color: "#f8f8f2", speed: 2.2, rarity: 0.005, isExotic: true, partOfDay: ['night'], zone: 5 },
+        { name: "Serpiente Marina", value: 8503, color: "#50fa7b", speed: 2.3, rarity: 0.004, isExotic: true, partOfDay: ['afternoon'], zone: 5 },
+
+        // Zone 6: Laguna Patoruzú
+        { name: "Medusa de Cristal", value: 19033, color: "#8be9fd", speed: 2.4, rarity: 0.003, isExotic: true, partOfDay: ['night'], zone: 6 },
+        { name: "Pez Unicornio", value: 12345, color: "#bd93f9", speed: 2.5, rarity: 0.002, isExotic: true, partOfDay: ['dawn'], zone: 6 },
+        { name: "Sirena Escamada", value: 45000, color: "#ff79c6", speed: 2.6, rarity: 0.001, isExotic: true, partOfDay: ['noon'], zone: 6 },
+        { name: "Mini Kraken", value: 38500, color: "#8b0000", speed: 2.7, rarity: 0.0008, isExotic: true, partOfDay: ['night'], zone: 6 },
+        { name: "Pez Fénix", value: 42000, color: "#ff5555", speed: 2.8, rarity: 0.0006, isExotic: true, partOfDay: ['dawn'], zone: 6 },
+        { name: "Quimera Luminosa", value: 75000, color: "#50fa7b", speed: 3.0, rarity: 0.0004, isExotic: true, partOfDay: ['afternoon'], zone: 6 },
+        { name: "Leviatán Abisal", value: 58000, color: "#1e0f3d", speed: 3.2, rarity: 0.0002, isExotic: true, partOfDay: ['night'], zone: 6 },
+        { name: "Pez Dragón Celestial", value: 74500, color: "#4a90e2", speed: 3.5, rarity: 0.0001, isExotic: true, partOfDay: ['dawn'], zone: 6 },
+        { name: "Emperador del Océano", value: 130000, color: "#00008B", speed: 3.7, rarity: 0.00008, requirements: { boat: 2, rod: 2 }, isExotic: true, partOfDay: ['noon'], zone: 6 },
+        { name: "Pez Ancestral", value: 720333, color: "#4B0082", speed: 3.8, rarity: 0.00006, requirements: { boat: 2, rod: 2 }, isExotic: true, partOfDay: ['afternoon'], zone: 6 },
+        { name: "Leviatán de las Profundidades", value: 455000, color: "#800080", speed: 4.0, rarity: 0.00004, requirements: { boat: 2, rod: 2 }, isExotic: true, partOfDay: ['night'], zone: 6 },
       ],
       treasureTypes: [
-        { name: "Perla", value: 10000, isCollectible: false, rarity: 0.1 },
-        { name: "Diamante", value: 190000, isCollectible: false, rarity: 0.01 },
-        { name: "iPhone 7", value: 5090, isCollectible: true, rarity: 0.05 },
-        { name: "Motorola", value: 2009, isCollectible: true, rarity: 0.06 },
-        { name: "Nokia 1100", value: 1100, isCollectible: true, rarity: 0.07 },
-        { name: "Reloj de oro", value: 15000, isCollectible: false, rarity: 0.02 },
-        { name: "Reloj de plata", value: 8500, isCollectible: false, rarity: 0.03 },
-        { name: "Reloj de cuco", value: 100, isCollectible: true, rarity: 0.08 },
-        { name: "Corona de oro", value: 40000, isCollectible: false, rarity: 0.005 },
-        { name: "Collar de oro", value: 17500, isCollectible: false, rarity: 0.015 },
-        { name: "Piedra pomez", value: 10, isCollectible: true, rarity: 0.2 },
-        { name: "Piedra azul", value: 50, isCollectible: true, rarity: 0.15 },
-        { name: "Piedra naranja brillante", value: 75, isCollectible: true, rarity: 0.1 },
-        { name: "Casco normando", value: 1500, isCollectible: true, rarity: 0.04 },
-        { name: "Reliquia desconocida", value: 0, isCollectible: true, rarity: 0.03 },
-        { name: "Anillo de compromiso", value: 3000, isCollectible: false, rarity: 0.025 },
-        { name: "Daga ceremonial", value: 2000, isCollectible: true, rarity: 0.035 },
-        { name: "Cáliz de plata", value: 4000, isCollectible: false, rarity: 0.02 },
-        { name: "Moneda de oro antigua", value: 51500, isCollectible: false, rarity: 0.05 },
-        { name: "Mapa del tesoro", value: 0, isCollectible: true, rarity: 0.06 },
-        { name: "Botella de ron añejo", value: 500, isCollectible: false, rarity: 0.07 },
-        { name: "Cofre del tesoro vacío", value: 100, isCollectible: true, rarity: 0.1 },
-        { name: "Esmeralda", value: 7500, isCollectible: false, rarity: 0.015 },
-        { name: "Rubí", value: 65000, isCollectible: false, rarity: 0.018 },
-        { name: "Zafiro", value: 55500, isCollectible: false, rarity: 0.019 },
-        { name: "Lingote de oro", value: 15000, isCollectible: false, rarity: 0.008 },
-        { name: "Lingote de plata", value: 6000, isCollectible: false, rarity: 0.01 },
-        { name: "Candelabro de plata", value: 5500, isCollectible: false, rarity: 0.022 },
-        { name: "Catalejo de latón", value: 4800, isCollectible: true, rarity: 0.06 },
-        { name: "Brújula antigua", value: 1600, isCollectible: true, rarity: 0.07 },
-        { name: "Sextante", value: 1200, isCollectible: true, rarity: 0.05 },
-        { name: "Astillero en una botella", value: 200, isCollectible: true, rarity: 0.09 },
-        { name: "Figura de proa de sirena", value: 2500, isCollectible: true, rarity: 0.03 },
-        { name: "Diente de megalodón", value: 4000, isCollectible: true, rarity: 0.02 },
-        { name: "Ammonite fosilizado", value: 1000, isCollectible: true, rarity: 0.04 },
-        { name: "Trilobite fosilizado", value: 800, isCollectible: true, rarity: 0.05 },
-        { name: "Ámbar con insecto", value: 1500, isCollectible: true, rarity: 0.035 },
-        { name: "Estatuilla de jade", value: 55000, isCollectible: true, rarity: 0.02 },
-        { name: "Máscara de oro inca", value: 15000, isCollectible: true, rarity: 0.007 },
-        { name: "Sarcófago egipcio en miniatura", value: 10000, isCollectible: true, rarity: 0.01 },
-        { name: "Jarrón griego antiguo", value: 58000, isCollectible: true, rarity: 0.012 },
-        { name: "Moneda romana de plata", value: 1200, isCollectible: false, rarity: 0.04 },
-        { name: "Punta de flecha de obsidiana", value: 5400, isCollectible: true, rarity: 0.08 },
-        { name: "Hacha de guerra vikinga", value: 3000, isCollectible: true, rarity: 0.025 },
-        { name: "Escudo de bronce", value: 2000, isCollectible: true, rarity: 0.03 },
-        { name: "Espada corta romana", value: 2500, isCollectible: true, rarity: 0.028 },
-        { name: "Armadura de samurái en miniatura", value: 5000, isCollectible: true, rarity: 0.015 },
-        { name: "Katana ornamental", value: 6000, isCollectible: true, rarity: 0.013 },
-        { name: "Shuriken de metal", value: 5200, isCollectible: true, rarity: 0.09 },
-        { name: "Pipa de la paz", value: 500, isCollectible: true, rarity: 0.07 },
-        { name: "Tocado de plumas", value: 1000, isCollectible: true, rarity: 0.05 },
-        { name: "Atrapasueños", value: 300, isCollectible: true, rarity: 0.08 },
-        { name: "Tótem de madera", value: 700, isCollectible: true, rarity: 0.06 },
-        { name: "Muñeca de vudú", value: 100, isCollectible: true, rarity: 0.1 },
-        { name: "Bola de cristal", value: 1500, isCollectible: true, rarity: 0.04 },
-        { name: "Varita mágica de juguete", value: 50, isCollectible: true, rarity: 0.15 },
-        { name: "Libro de hechizos (en blanco)", value: 200, isCollectible: true, rarity: 0.09 },
-        { name: "Cubo de Rubik resuelto", value: 10, isCollectible: true, rarity: 0.2 },
-        { name: "Cubo de Rubik sin resolver", value: 5, isCollectible: true, rarity: 0.25 },
-        { name: "Peon de madera", value: 20, isCollectible: true, rarity: 0.18 },
-        { name: "Canicas de vidrio", value: 15, isCollectible: true, rarity: 0.22 },
-        { name: "Soldadito de plomo", value: 30, isCollectible: true, rarity: 0.17 },
-        { name: "Oso de peluche", value: 25, isCollectible: true, rarity: 0.19 },
-        { name: "Coche de juguete antiguo", value: 150, isCollectible: true, rarity: 0.1 },
-        { name: "Tren de juguete de hojalata", value: 250, isCollectible: true, rarity: 0.08 },
-        { name: "Caja de música", value: 400, isCollectible: true, rarity: 0.07 },
-        { name: "Cámara de fotos antigua", value: 800, isCollectible: true, rarity: 0.06 },
-        { name: "Máquina de escribir", value: 600, isCollectible: true, rarity: 0.065 },
-        { name: "Teléfono de disco", value: 300, isCollectible: true, rarity: 0.075 },
-        { name: "Vinilo de los Beatles", value: 1000, isCollectible: true, rarity: 0.05 },
-        { name: "Casete de Queen", value: 500, isCollectible: true, rarity: 0.06 },
-        { name: "Walkman", value: 400, isCollectible: true, rarity: 0.07 },
-        { name: "Discman", value: 300, isCollectible: true, rarity: 0.08 },
-        { name: "Game Boy", value: 1200, isCollectible: true, rarity: 0.04 },
-        { name: "Tamagotchi", value: 200, isCollectible: true, rarity: 0.09 },
-        { name: "Furby", value: 150, isCollectible: true, rarity: 0.1 },
-        { name: "POGs", value: 10, isCollectible: true, rarity: 0.2 },
-        { name: "Tazos", value: 5, isCollectible: true, rarity: 0.25 },
-        { name: "Pluma estilográfica", value: 600, isCollectible: false, rarity: 0.06 },
-        { name: "Tintero de porcelana", value: 400, isCollectible: false, rarity: 0.07 },
-        { name: "Sello de cera", value: 200, isCollectible: false, rarity: 0.09 },
-        { name: "Carta de amor antigua", value: 0, isCollectible: true, rarity: 0.1 },
-        { name: "Diario de un capitán", value: 0, isCollectible: true, rarity: 0.08 },
-        { name: "Gafas de aviador", value: 300, isCollectible: true, rarity: 0.08 },
-        { name: "Sombrero de explorador", value: 200, isCollectible: true, rarity: 0.09 },
-        { name: "Pipa de Sherlock Holmes", value: 400, isCollectible: true, rarity: 0.07 },
-        { name: "Lupa de detective", value: 150, isCollectible: true, rarity: 0.1 },
-        { name: "Placa de sheriff", value: 500, isCollectible: true, rarity: 0.06 },
-        { name: "Esposas antiguas", value: 300, isCollectible: true, rarity: 0.08 },
-        { name: "Bolsa de canicas del 'ojo de gato'", value: 50, isCollectible: true, rarity: 0.15 },
-        { name: "Caleidoscopio", value: 80, isCollectible: true, rarity: 0.12 },
-        { name: "Armónica", value: 120, isCollectible: true, rarity: 0.11 },
-        { name: "Flauta de Pan", value: 100, isCollectible: true, rarity: 0.13 },
-        { name: "Tambor pequeño", value: 150, isCollectible: true, rarity: 0.1 },
-        { name: "Maracas", value: 70, isCollectible: true, rarity: 0.14 },
-        { name: "Guitarra en miniatura", value: 200, isCollectible: true, rarity: 0.09 },
-        { name: "Violín en miniatura", value: 300, isCollectible: true, rarity: 0.08 },
-        { name: "Piano de pulgar (Kalimba)", value: 180, isCollectible: true, rarity: 0.1 },
-        { name: "Gema brillante sin identificar", value: 42000, isCollectible: false, rarity: 0.03 },
-        { name: "Huevo de Fabergé falso", value: 4100, isCollectible: true, rarity: 0.1 },
-        { name: "Estatua de la Libertad de recuerdo", value: 520, isCollectible: true, rarity: 0.18 },
-        { name: "Torre Eiffel de recuerdo", value: 520, isCollectible: true, rarity: 0.18 },
-        { name: "Big Ben de recuerdo", value: 520, isCollectible: true, rarity: 0.18 },
+        // Zone 1
+        { name: "Piedra pomez", value: 10, isCollectible: true, rarity: 0.2, zone: 1 },
+        { name: "Piedra azul", value: 50, isCollectible: true, rarity: 0.15, zone: 1 },
+        { name: "Piedra naranja brillante", value: 75, isCollectible: true, rarity: 0.1, zone: 1 },
+        { name: "Cofre del tesoro vacío", value: 100, isCollectible: true, rarity: 0.1, zone: 1 },
+        { name: "Reloj de cuco", value: 100, isCollectible: true, rarity: 0.08, zone: 1 },
+
+        // Zone 2
+        { name: "Botella de ron añejo", value: 500, isCollectible: false, rarity: 0.07, zone: 2 },
+        { name: "Nokia 1100", value: 1100, isCollectible: true, rarity: 0.07, zone: 2 },
+        { name: "Motorola", value: 2009, isCollectible: true, rarity: 0.06, zone: 2 },
+        { name: "Casco normando", value: 1500, isCollectible: true, rarity: 0.04, zone: 2 },
+
+        // Zone 3
+        { name: "iPhone 7", value: 5090, isCollectible: true, rarity: 0.05, zone: 3 },
+        { name: "Reloj de plata", value: 8500, isCollectible: false, rarity: 0.03, zone: 3 },
+        { name: "Anillo de compromiso", value: 3000, isCollectible: false, rarity: 0.025, zone: 3 },
+        { name: "Daga ceremonial", value: 2000, isCollectible: true, rarity: 0.035, zone: 3 },
+
+        // Zone 4
+        { name: "Perla", value: 10000, isCollectible: false, rarity: 0.1, zone: 4 },
+        { name: "Reloj de oro", value: 15000, isCollectible: false, rarity: 0.02, zone: 4 },
+        { name: "Collar de oro", value: 17500, isCollectible: false, rarity: 0.015, zone: 4 },
+        { name: "Cáliz de plata", value: 4000, isCollectible: false, rarity: 0.02, zone: 4 },
+
+        // Zone 5
+        { name: "Corona de oro", value: 40000, isCollectible: false, rarity: 0.005, zone: 5 },
+        { name: "Moneda de oro antigua", value: 51500, isCollectible: false, rarity: 0.05, zone: 5 },
+        { name: "Esmeralda", value: 7500, isCollectible: false, rarity: 0.015, zone: 5 },
+        { name: "Lingote de plata", value: 6000, isCollectible: false, rarity: 0.01, zone: 5 },
+
+        // Zone 6
+        { name: "Diamante", value: 190000, isCollectible: false, rarity: 0.01, zone: 6 },
+        { name: "Rubí", value: 65000, isCollectible: false, rarity: 0.018, zone: 6 },
+        { name: "Zafiro", value: 55500, isCollectible: false, rarity: 0.019, zone: 6 },
+        { name: "Lingote de oro", value: 15000, isCollectible: false, rarity: 0.008, zone: 6 },
+        { name: "Estatuilla de jade", value: 55000, isCollectible: true, rarity: 0.02, zone: 6 },
+        { name: "Máscara de oro inca", value: 15000, isCollectible: true, rarity: 0.007, zone: 6 },
+        { name: "Sarcófago egipcio en miniatura", value: 10000, isCollectible: true, rarity: 0.01, zone: 6 },
+        { name: "Jarrón griego antiguo", value: 58000, isCollectible: true, rarity: 0.012, zone: 6 },
       ],
     };
   },
@@ -300,24 +249,23 @@ const store = createStore({
     setCurrentSeason(state, season) { state.currentSeason = season; },
     setTemperature(state, temp) { state.temperature = temp; },
     setFishingDepth(state, depth) { state.fishingDepth = depth; },
-    setBoatPosition(state, position) { state.boatPosition = position; },
+    setBoatPosition(state, { x, y }) {
+      if (x !== undefined) state.boatPosition = x;
+      if (y !== undefined) state.boatPositionY = y;
+    },
     setCurrentRod(state, index) { state.currentRod = index; },
     setCurrentBoat(state, index) { state.currentBoat = index; },
     unlockRod(state, index) { state.unlockedRods[index] = true; },
     unlockBoat(state, index) { state.unlockedBoats[index] = true; },
     addMessage(state, message) {
-      state.messageQueue.push(message);
-      if (!state.isDisplayingMessage) {
-        this.dispatch('processMessageQueue');
-      }
-    },
-    displayMessage(state, message) {
-      state.messages = [message];
-      state.isDisplayingMessage = true;
-    },
-    clearMessage(state) {
-      state.messages = [];
-      state.isDisplayingMessage = false;
+      const id = Date.now() + Math.random();
+      state.messages.push({ ...message, id });
+      setTimeout(() => {
+        const index = state.messages.findIndex(m => m.id === id);
+        if (index !== -1) {
+          state.messages.splice(index, 1);
+        }
+      }, 3000); // Remove message after 3 seconds
     },
     addCaughtTrash(state, trash) { state.caughtTrashInventory.push(trash); },
     setCaughtTrashInventory(state, inventory) { state.caughtTrashInventory = inventory; },
@@ -365,9 +313,9 @@ const store = createStore({
           goal.current += amount;
           if (goal.current >= goal.target) {
             goal.current = goal.target; // Cap current at target
-          });
-        });
-      }
+          }
+        }
+      });
     },
     completeGoal(state, goalId) {
       const index = state.currentGoals.findIndex(g => g.id === goalId);
@@ -384,32 +332,39 @@ const store = createStore({
     setFishToCatch(state, fish) {
       state.fishToCatch = fish;
     },
+    unlockZone(state, zoneId) {
+      const zone = state.zones.find(z => z.id === zoneId);
+      if (zone) {
+        zone.unlocked = true;
+      }
+    },
+    setCurrentZone(state, zoneId) {
+      state.currentZone = zoneId;
+    },
+    updateUniqueTreasureGoal(state) {
+      const uniqueTreasures = new Set(state.caughtTreasuresInventory.map(t => t.name));
+      const goal = state.currentGoals.find(g => g.type === 'findAllUniqueTreasures');
+      if (goal) {
+        goal.current = uniqueTreasures.size;
+      }
+    },
   },
   actions: {
     initializeGame({ commit, dispatch }) {
-      commit('addMessage', { text: '¡Bienvenido! Usá las flechas para jugar.', type: 'system' });
+      commit('addMessage', { text: '¡Bienvenido a Fisherboy! Lanza tu caña y que comience la aventura.', type: 'system' });
       // Add initial goals
-      dispatch('addGoal', 'goal_sell_1_fish');
-      dispatch('addGoal', 'goal_catch_10_common_fish');
-      dispatch('addGoal', 'goal_earn_500_money');
+      commit('addGoal', 'goal_catch_10_common_fish');
+      commit('addGoal', 'goal_earn_500_money');
+      commit('addGoal', 'goal_catch_50_common_fish');
+      commit('addGoal', 'goal_earn_10000_money');
+      commit('addGoal', 'goal_recycle_10_items');
+      commit('addGoal', 'goal_find_1_treasure');
     },
     showRandomTip({ commit, state }) {
-      if (state.messageQueue.length === 0 && !state.isDisplayingMessage) {
+      if (state.messages.length === 0) {
         const randomIndex = Math.floor(Math.random() * state.tips.length);
         const tip = state.tips[randomIndex];
         commit('addMessage', { text: `Consejo: ${tip}`, type: 'tip' });
-      }
-    },
-    processMessageQueue({ commit, state, dispatch }) {
-      if (state.messageQueue.length > 0) {
-        const message = state.messageQueue.shift();
-        commit('displayMessage', message);
-        setTimeout(() => {
-          commit('clearMessage');
-          dispatch('processMessageQueue');
-        }, 2000);
-      } else {
-        dispatch('showRandomTip');
       }
     },
     updateClimate({ commit, state }) {
@@ -472,8 +427,23 @@ const store = createStore({
         case 'KeyR': dispatch('toggleModal', 'recycle'); break;
         case 'KeyT': dispatch('toggleModal', 'treasures'); break;
         case 'KeyE': dispatch('toggleModal', 'equipment'); break;
+        case 'KeyP': dispatch('toggleModal', 'map'); break;
         case 'KeyV': dispatch('sellAllFish'); break; // Vender Pescado
         case 'KeyD': dispatch('goToSleep'); break; // Ir a Dormir
+        case 'ArrowUp': dispatch('moveBoat', { y: -1 }); break;
+        case 'ArrowDown': dispatch('moveBoat', { y: 1 }); break;
+        case 'ArrowLeft': dispatch('moveBoat', { x: -1 }); break;
+        case 'ArrowRight': dispatch('moveBoat', { x: 1 }); break;
+      }
+    },
+    moveBoat({ commit, state }, { x = 0, y = 0 }) {
+      const newX = state.boatPosition + x * 0.1;
+      const newY = state.boatPositionY + y * 0.1;
+      if (newX >= 0 && newX <= 100) {
+        commit('setBoatPosition', { x: newX });
+      }
+      if (newY >= 0 && newY <= 100) {
+        commit('setBoatPosition', { y: newY });
       }
     },
     startFishing({ commit, state, dispatch }) { // Added dispatch here
@@ -481,7 +451,7 @@ const store = createStore({
       commit('setIsFishing', true);
       commit('setFishingDepth', 'normal');
       commit('setEnergy', state.energy - 10);
-      commit('addMessage', { text: 'Lanzando caña...', type: 'system' });
+      commit('addMessage', { text: 'Lanzando la caña... ¡A ver qué pica!', type: 'system' });
       setTimeout(() => {
         const boat = state.boats[state.currentBoat];
         const rod = state.fishingRods[state.currentRod];
@@ -489,18 +459,19 @@ const store = createStore({
           const trashItem = state.trashTypes[Math.floor(Math.random() * state.trashTypes.length)];
           if (trashItem.energy) {
             commit('setEnergy', state.energy + trashItem.energy);
-            commit('addMessage', { text: `¡Encontraste ${trashItem.name}! (+${trashItem.energy} de energía)`, type: 'catch' });
+            commit('addMessage', { text: `¡Vaya! Encontraste ${trashItem.name} y te da +${trashItem.energy} de energía.`, type: 'catch' });
           } else {
             commit('addCaughtTrash', trashItem);
             commit('incrementTrashCount');
-            commit('addMessage', { text: `¡Pescaste ${trashItem.name}!`, type: 'catch' });
+            commit('addMessage', { text: `¡Oh, no! Has pescado ${trashItem.name}.`, type: 'catch' });
           }
         } else {
           if (Math.random() * boat.catchBonus < rod.catchRate) {
             const availableFish = state.fishTypes.filter(fish => {
                 const meetsRequirements = !fish.requirements || (state.currentBoat >= fish.requirements.boat && state.currentRod >= fish.requirements.rod);
                 const availableAtTime = fish.partOfDay.includes(state.currentPartOfDay);
-                return meetsRequirements && availableAtTime;
+                const inZone = fish.zone === state.currentZone;
+                return meetsRequirements && availableAtTime && inZone;
             });
 
             const totalRarity = availableFish.reduce((sum, fish) => sum + fish.rarity, 0);
@@ -519,29 +490,29 @@ const store = createStore({
               if (fishToCatch.value > 1000 || fishToCatch.isExotic) {
                 commit('setFishToCatch', fishToCatch);
                 commit('setFishFighting', true);
-                commit('addMessage', { text: `¡Un pez grande picó! ¡Toca repetidamente para pescarlo!`, type: 'warning' });
+                commit('addMessage', { text: `¡Un pez enorme ha picado! ¡Toca repetidamente para no dejarlo escapar!`, type: 'warning' });
               } else {
                 const value = Math.floor(fishToCatch.value * (state.isNight ? 1.5 : 1));
-                commit('addMessage', { text: `¡Has atrapado un ${fishToCatch.name}! (${value})`, type: 'catch' });
+                commit('addMessage', { text: `¡Genial! Has atrapado un ${fishToCatch.name} con un valor de ${value}$.`, type: 'catch' });
                 commit('updateFishingStats', { fish: fishToCatch, value });
                 commit('addCaughtFish', { ...fishToCatch, value });
                 if (fishToCatch.isExotic) {
                     commit('incrementExoticFishCount');
-                    dispatch('updateGoalProgress', { type: 'catchExoticFish', amount: 1 }); // Added
+                    commit('updateGoalProgress', { type: 'catchExoticFish', amount: 1 }); // Added
                     if (fishToCatch.rarity <= 0.005) { // Assuming rarity <= 0.005 means legendary
-                        dispatch('updateGoalProgress', { type: 'catchLegendaryFish', amount: 1 }); // Added
+                        commit('updateGoalProgress', { type: 'catchLegendaryFish', amount: 1 }); // Added
                     }
                 } else {
                     commit('incrementCommonFishCount');
-                    dispatch('updateGoalProgress', { type: 'catchCommonFish', amount: 1 }); // Added
+                    commit('updateGoalProgress', { type: 'catchCommonFish', amount: 1 }); // Added
                 }
                 commit('addMoney', value);
               }
             } else {
-                commit('addMessage', { text: 'No picó nada...', type: 'system' });
+                commit('addMessage', { text: 'Parece que hoy no pican...', type: 'system' });
             }
           } else {
-            commit('addMessage', { text: 'El pez escapó...', type: 'warning' });
+            commit('addMessage', { text: '¡Rayos! El pez se ha escapado.', type: 'warning' });
           }
         }
         commit('setIsFishing', false);
@@ -553,7 +524,7 @@ const store = createStore({
       commit('setIsFishing', true);
       commit('setFishingDepth', 'deep');
       commit('setEnergy', state.energy - 20); // Increased energy cost
-      commit('addMessage', { text: 'Lanzando caña a las profundidades...', type: 'system' });
+      commit('addMessage', { text: 'Lanzando la caña a las profundidades... ¿Qué misterios nos aguardan?', type: 'system' });
       setTimeout(() => {
         const boat = state.boats[state.currentBoat];
         const rod = state.fishingRods[state.currentRod];
@@ -569,7 +540,7 @@ const store = createStore({
             maxTreasureValue = 5000;
           }
 
-          const availableTreasures = state.treasureTypes.filter(treasure => treasure.value <= maxTreasureValue);
+          const availableTreasures = state.treasureTypes.filter(treasure => treasure.value <= maxTreasureValue && treasure.zone === state.currentZone);
 
           const totalRarity = availableTreasures.reduce((sum, treasure) => sum + treasure.rarity, 0);
           let random = Math.random() * totalRarity;
@@ -584,23 +555,24 @@ const store = createStore({
           }
 
           if (treasureToCatch) {
-              commit('addMessage', { text: `¡Encontraste un tesoro: ${treasureToCatch.name}!`, type: 'achievement' });
+              commit('addMessage', { text: `¡Increíble! Has encontrado un tesoro: ${treasureToCatch.name}!`, type: 'achievement' });
               commit('addCaughtTreasure', treasureToCatch);
               commit('incrementTreasuresCount');
               if (treasureToCatch.value > 0) {
                 commit('addMoney', treasureToCatch.value);
               }
-              dispatch('updateGoalProgress', { type: 'findTreasure', amount: 1 }); // Added
+              commit('updateGoalProgress', { type: 'findTreasure', amount: 1 }); // Added
+              commit('updateUniqueTreasureGoal');
           }
         } else if (Math.random() < 0.2) { // Lower chance of trash
           const trashItem = state.trashTypes[Math.floor(Math.random() * state.trashTypes.length)];
           if (trashItem.energy) {
             commit('setEnergy', state.energy + trashItem.energy);
-            commit('addMessage', { text: `¡Encontraste ${trashItem.name}! (+${trashItem.energy} de energía)`, type: 'catch' });
+            commit('addMessage', { text: `¡Vaya! Encontraste ${trashItem.name} y te da +${trashItem.energy} de energía.`, type: 'catch' });
           } else {
             commit('addCaughtTrash', trashItem);
             commit('incrementTrashCount');
-            commit('addMessage', { text: `¡Pescaste ${trashItem.name}!`, type: 'catch' });
+            commit('addMessage', { text: `¡Oh, no! Has pescado ${trashItem.name}.`, type: 'catch' });
           }
         } else {
           if (Math.random() * boat.catchBonus < rod.catchRate) {
@@ -612,7 +584,8 @@ const store = createStore({
             }).filter(fish => {
                 const meetsRequirements = !fish.requirements || (state.currentBoat >= fish.requirements.boat && state.currentRod >= fish.requirements.rod);
                 const availableAtTime = fish.partOfDay.includes(state.currentPartOfDay);
-                return meetsRequirements && availableAtTime;
+                const inZone = fish.zone === state.currentZone;
+                return meetsRequirements && availableAtTime && inZone;
             });
 
             const totalRarity = availableFish.reduce((sum, fish) => sum + fish.rarity, 0);
@@ -631,10 +604,10 @@ const store = createStore({
               if (fishToCatch.value > 5000 || fishToCatch.isExotic) {
                 commit('setFishToCatch', fishToCatch);
                 commit('setFishFighting', true);
-                commit('addMessage', { text: `¡Un pez grande picó! ¡Tocá repetidamente en el bote para pescarlo!`, type: 'warning' });
+                commit('addMessage', { text: `¡Un pez enorme ha picado! ¡Toca repetidamente para no dejarlo escapar!`, type: 'warning' });
               } else {
                 const value = Math.floor(fishToCatch.value * (state.isNight ? 1.5 : 1));
-                commit('addMessage', { text: `¡Atrapaste un ${fishToCatch.name}! (${value})`, type: 'catch' });
+                commit('addMessage', { text: `¡Genial! Has atrapado un ${fishToCatch.name} con un valor de ${value}$.`, type: 'catch' });
                 commit('updateFishingStats', { fish: fishToCatch, value });
                 commit('addCaughtFish', { ...fishToCatch, value });
                 if (fishToCatch.isExotic) {
@@ -645,10 +618,10 @@ const store = createStore({
                 commit('addMoney', value);
               }
             } else {
-                commit('addMessage', { text: 'No picó nada...', type: 'system' });
+                commit('addMessage', { text: 'Parece que hoy no pican...', type: 'system' });
             }
           } else {
-            commit('addMessage', { text: 'El pez escapó...', type: 'warning' });
+            commit('addMessage', { text: '¡Rayos! El pez se ha escapado.', type: 'warning' });
           }
         }
         commit('setIsFishing', false);
@@ -659,19 +632,19 @@ const store = createStore({
       if (state.fishFighting) {
         const fish = state.fishToCatch;
         const value = Math.floor(fish.value * (state.isNight ? 1.5 : 1));
-        commit('addMessage', { text: `¡Has atrapado un ${fish.name}! (${value})`, type: 'catch' });
+        commit('addMessage', { text: `¡Lo lograste! Has atrapado un ${fish.name} con un valor de ${value}$.`, type: 'catch' });
         commit('updateFishingStats', { fish, value });
         commit('addCaughtFish', { ...fish, value });
         if (fish.isExotic) {
             commit('incrementExoticFishCount');
-            dispatch('updateGoalProgress', { type: 'catchExoticFish', amount: 1 });
+            commit('updateGoalProgress', { type: 'catchExoticFish', amount: 1 });
             // Check if it's a legendary fish
             if (fish.rarity <= 0.005) { // Assuming rarity <= 0.005 means legendary
-                dispatch('updateGoalProgress', { type: 'catchLegendaryFish', amount: 1 });
+                commit('updateGoalProgress', { type: 'catchLegendaryFish', amount: 1 });
             }
         } else {
             commit('incrementCommonFishCount');
-            dispatch('updateGoalProgress', { type: 'catchCommonFish', amount: 1 });
+            commit('updateGoalProgress', { type: 'catchCommonFish', amount: 1 });
         }
         commit('addMoney', value);
         commit('setFishFighting', false);
@@ -680,7 +653,7 @@ const store = createStore({
     },
     sellAllFish({ commit, state, dispatch }) {
       if (state.caughtFishInventory.length === 0) {
-        commit('addMessage', { text: 'No tienes peces para vender.', type: 'warning' });
+        commit('addMessage', { text: 'No tienes ningún pez para vender. ¡A pescar!', type: 'warning' });
         return;
       }
 
@@ -689,19 +662,19 @@ const store = createStore({
 
       commit('addMoney', totalValue);
       commit('setCaughtFishInventory', []);
-      commit('addMessage', { text: `Vendiste ${fishCount} peces por ${totalValue}.`, type: 'system' });
+      commit('addMessage', { text: `Has vendido ${fishCount} peces por un total de ${totalValue}$. ¡Buen trabajo!`, type: 'system' });
 
       // Update goals
-      dispatch('updateGoalProgress', { type: 'sellFish', amount: fishCount });
-      dispatch('updateGoalProgress', { type: 'earnMoney', amount: totalValue });
+      commit('updateGoalProgress', { type: 'sellFish', amount: fishCount });
+      commit('updateGoalProgress', { type: 'earnMoney', amount: totalValue });
     },
     buyRod({ commit, state, dispatch }, rodIndex) {
         const rod = state.fishingRods[rodIndex];
         if (state.money >= rod.price) {
             commit('spendMoney', rod.price);
             commit('unlockRod', rodIndex);
-            commit('addMessage', { text: `¡Has comprado la ${rod.name}!`, type: 'achievement' });
-            dispatch('updateGoalProgress', { type: 'buyRod', amount: 1, id: rodIndex });
+            commit('addMessage', { text: `¡Excelente compra! Has adquirido la ${rod.name}.`, type: 'achievement' });
+            commit('updateGoalProgress', { type: 'buyRod', amount: 1, id: rodIndex });
         }
     },
     buyBoat({ commit, state, dispatch }, boatIndex) {
@@ -709,8 +682,8 @@ const store = createStore({
         if (state.money >= boat.price) {
             commit('spendMoney', boat.price);
             commit('unlockBoat', boatIndex);
-            commit('addMessage', { text: `¡Has comprado el ${boat.name}!`, type: 'achievement' });
-            dispatch('updateGoalProgress', { type: 'buyBoat', amount: 1, id: boatIndex });
+            commit('addMessage', { text: `¡Excelente compra! Has adquirido el ${boat.name}.`, type: 'achievement' });
+            commit('updateGoalProgress', { type: 'buyBoat', amount: 1, id: boatIndex });
         }
     },
     selectRod({ commit, state }, rodIndex) {
@@ -730,7 +703,7 @@ const store = createStore({
         if (!goal.completed && goal.current >= goal.target) {
           commit('completeGoal', goal.id); // Pass only the ID
           commit('addMoney', goal.reward);
-          commit('addMessage', { text: `¡Objetivo completado: ${goal.description}! Recompensa: ${goal.reward}`, type: 'achievement' });
+          commit('addMessage', { text: `¡Felicidades! Has completado el objetivo: "${goal.description}" y ganas ${goal.reward}$.`, type: 'achievement' });
         }
       }
     },
@@ -741,7 +714,8 @@ const store = createStore({
         newInventory.splice(index, 1);
         commit('setCaughtTrashInventory', newInventory);
         commit('recycle', { count: 1, value: item.recycleValue });
-        dispatch('updateGoalProgress', { type: 'recycleItems', amount: 1 });
+        commit('addMessage', { text: `Has reciclado ${item.name} y has ganado ${item.recycleValue}$.`, type: 'system' });
+        commit('updateGoalProgress', { type: 'recycleItems', amount: 1 });
     },
     recycleAllTrash({ commit, state, dispatch }) {
         const totalValue = state.caughtTrashInventory.reduce((sum, item) => sum + item.recycleValue, 0);
@@ -750,8 +724,8 @@ const store = createStore({
             commit('addMoney', totalValue);
             commit('recycle', { count: itemCount, value: totalValue });
             commit('setCaughtTrashInventory', []);
-            commit('addMessage', { text: `Reciclaste todo por ${totalValue}.`, type: 'system' });
-            dispatch('updateGoalProgress', { type: 'recycleItems', amount: itemCount });
+            commit('addMessage', { text: `Has reciclado toda la basura y has ganado ${totalValue}$.`, type: 'system' });
+            commit('updateGoalProgress', { type: 'recycleItems', amount: itemCount });
         }
     },
     goToSleep({ commit, dispatch, state }) {
@@ -770,13 +744,26 @@ const store = createStore({
                 commit('setGameTime', newTime);
             }
             dispatch('updateClimate');
-            commit('addMessage', { text: `Duermes profundamente... Costo: ${sleepCost}`, type: 'system' });
+            commit('addMessage', { text: `Descansas y recuperas tus fuerzas. El costo del descanso es de ${sleepCost}$.`, type: 'system' });
         } else {
-            commit('addMessage', { text: `No tienes suficiente dinero para dormir. Necesitas ${sleepCost}.`, type: 'warning' });
+            commit('addMessage', { text: `No tienes suficiente dinero para descansar. Necesitas ${sleepCost}$.`, type: 'warning' });
         }
     },
     toggleModal({ commit }, modal) {
       commit('toggleModal', modal);
+    },
+    unlockZone({ commit, state }, zoneId) {
+      const zone = state.zones.find(z => z.id === zoneId);
+      if (zone && !zone.unlocked && state.money >= zone.cost) {
+        commit('spendMoney', zone.cost);
+        commit('unlockZone', zoneId);
+        commit('addMessage', { text: `¡Nueva zona desbloqueada! Ahora puedes pescar en ${zone.name}.`, type: 'achievement' });
+      }
+    },
+    travelToZone({ commit }, zoneId) {
+      commit('setCurrentZone', zoneId);
+      commit('addMessage', { text: `Preparando el viaje a la nueva zona...`, type: 'system' });
+      commit('toggleModal', 'map');
     },
     playMusic() {
       // This action is dispatched to trigger music playback in VolumeControl.vue
@@ -806,10 +793,12 @@ const store = createStore({
     getCaughtTrashInventory: (state) => state.caughtTrashInventory,
     getModals: (state) => state.modals,
     getRecycledObjects: (state) => state.recycledObjects,
-    getGoals: (state) => ({
-      current: state.currentGoals,
-      completed: state.completedGoals,
-    }),
+    getGoals: (state) => {
+      return {
+        current: state.currentGoals,
+        completed: state.completedGoals,
+      };
+    },
     getCaughtTreasuresInventory: (state) => state.caughtTreasuresInventory,
     getCurrentPartOfDay: (state) => state.currentPartOfDay,
     getCurrentSeason: (state) => state.currentSeason,

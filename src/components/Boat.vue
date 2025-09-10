@@ -1,5 +1,5 @@
 <template>
-  <div id="boat" :style="{ left: boatPosition + '%', bottom: '45%' }">
+  <div id="boat" :style="{ left: boatPosition + '%', bottom: boatPositionY + '%' }">
     <div id="fisher"></div>
     <div id="fishingLine" :class="fishingDepth" :style="{ backgroundColor: fishingLineColor }"></div>
   </div>
@@ -15,6 +15,7 @@ export default {
     const store = useStore();
 
     const boatPosition = computed(() => store.state.boatPosition);
+    const boatPositionY = computed(() => store.state.boatPositionY);
     const fishingDepth = computed(() => store.state.fishingDepth);
     const currentRod = computed(() => store.state.currentRod);
 
@@ -29,6 +30,7 @@ export default {
 
     return {
       boatPosition,
+      boatPositionY,
       fishingDepth,
       fishingLineColor,
     };

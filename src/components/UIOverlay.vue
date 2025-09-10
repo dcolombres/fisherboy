@@ -95,7 +95,7 @@ export default {
       }),
       goToSleep: () => store.dispatch('goToSleep'),
       toggleModal: (modal) => store.dispatch('toggleModal', modal),
-      openMap: () => store.dispatch('addMessage', { text: 'El mapa se desarrollará en el futuro.', type: 'system' }),
+      openMap: () => store.dispatch('toggleModal', 'map'),
       getModals: computed(() => store.getters.getModals),
       messages,
       canSleep,
@@ -207,56 +207,18 @@ export default {
 }
 
 .energy-high #energy-fill {
-  background-color: #4CAF50;
+  background-color: #01f80a;
 }
 
 .energy-medium #energy-fill {
-  background-color: #FFC107;
+  background-color: #fc7d07;
 }
 
 .energy-low #energy-fill {
-  background-color: #F44336;
+  background-color: #ff1201;
 }
 
-#message-console {
-  position: fixed;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 400px;
-  height: auto;
-  display: flex;
-  flex-direction: column-reverse;
-  pointer-events: none;
-  align-items: center;
-}
 
-.message {
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
-  margin-top: 8px;
-  font-size: 0.9em;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  transition: all 0.5s ease;
-}
-
-/* Estilos específicos para cada tipo de mensaje */
-.message-catch { color: #50fa7b; }
-.message-achievement { color: #ffd700; }
-.message-warning { color: #ff5555; }
-.message-system { color: #c0e5ee; font-style: italic; }
-
-/* Animaciones de transición */
-.message-fade-enter-active, .message-fade-leave-active {
-  transition: all 0.5s ease;
-}
-.message-fade-enter-from, .message-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
 
 #right-buttons-container {
     display: none;

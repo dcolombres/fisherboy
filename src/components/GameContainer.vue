@@ -8,6 +8,7 @@
     <TreasuresModal />
     <EquipmentModal />
     <InstructionsModal />
+    <MapModal />
     
     <Boat />
     <Storm />
@@ -27,6 +28,7 @@ import GoalsModal from './GoalsModal.vue';
 import RecycleModal from './RecycleModal.vue';
 import TreasuresModal from './TreasuresModal.vue';
 import InstructionsModal from './InstructionsModal.vue';
+import MapModal from './MapModal.vue';
 
 import EquipmentModal from './EquipmentModal.vue';
 import Boat from './Boat.vue';
@@ -43,6 +45,7 @@ export default {
     RecycleModal,
     TreasuresModal,
     InstructionsModal,
+    MapModal,
     
     EquipmentModal,
     Boat,
@@ -90,6 +93,9 @@ export default {
 
     // Ciclo de vida
     onMounted(() => {
+      window.addEventListener('keydown', (e) => {
+        store.dispatch('handleKeyDown', e.code);
+      });
       setInterval(() => {
         store.dispatch('gameTick');
       }, 1000);
