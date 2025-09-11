@@ -594,97 +594,23 @@ const store = createStore({
             commit('setFishingDepth', null);
         }, 2000 / boat.speedMultiplier);
         },
-        startDeepFishing({ commit, state }) {
+        startDeepFishing({ commit, state, dispatch }) {
         if (state.isFishing || state.energy < 20) return; // Increased energy cost
         commit('setIsFishing', true);
         commit('setFishingDepth', 'deep');
         commit('setEnergy', state.energy - 20); // Increased energy cost
         commit('addMessage', { text: 'Lanzando la caña a las profundidades... ¿Qué misterios nos aguardan?', type: 'system' });
+
         setTimeout(() => {
-            const boat = state.boats[state.currentBoat];
-            const rod = state.fishingRods[state.currentRod];
+            const availableFish = state.fishTypes.filter(fish => {
+                const meetsRequirements = !fish.requirements || (state.currentBoat >= fish.requirements.boat && state.currentRod >= fish.requirements.rod);
+                const availableAtTime = fish.partOfDay.includes(state.currentPartOfDay);
+                const inZone = fish.zone === state.currentZone;
+                const isDifficult = fish.isExotic; // Defining difficult fish as exotic
+                return meetsRequirements && availableAtTime && inZone && isDifficult;
+            });
 
-            // Helper function for adjusted rarity
-            const getAdjustedRarity = (fish) => {
-                let adjustedRarity = fish.rarity;
-
-                // Apply seasonal bonus
-                if (fish.seasonalBonus && fish.seasonalBonus[state.currentSeason]) {
-                    adjustedRarity *= fish.seasonalBonus[state.currentSeason];
-                }
-
-                // Apply temperature bonus
-                if (fish.temperatureRange) {
-                    const [minTemp, maxTemp] = fish.temperatureRange;
-                    if (state.temperature >= minTemp && state.temperature <= maxTemp) {
-                        adjustedRarity *= 1.5; // Example bonus for being in preferred temperature range
-                    }
-                }
-                return adjustedRarity;
-            };
-            
-            // Treasure hunting logic
-            if (state.currentBoat === 2 && Math.random() < 0.1) { // 10% chance of finding a treasure with the best boat
-            let maxTreasureValue = 400; // Default for early days
-            if (state.currentDay > 20) {
-                maxTreasureValue = Infinity; // All treasures
-            } else if (state.currentDay > 10) {
-                maxTreasureValue = 20000;
-            } else if (state.currentDay > 5) {
-                maxTreasureValue = 5000;
-            }
-
-            const availableTreasures = state.treasureTypes.filter(treasure => treasure.value <= maxTreasureValue && treasure.zone === state.currentZone);
-
-            const totalRarity = availableTreasures.reduce((sum, treasure) => sum + treasure.rarity, 0);
-            let random = Math.random() * totalRarity;
-            let treasureToCatch = null;
-
-            for (const treasure of availableTreasures) {
-                random -= treasure.rarity;
-                if (random <= 0) {
-                    treasureToCatch = treasure;
-                    break;
-                }
-            }
-
-            if (treasureToCatch) {
-                commit('addMessage', { text: `¡Increíble! Has encontrado un tesoro: ${treasureToCatch.name}!`, type: 'achievement' });
-                commit('addCaughtTreasure', treasureToCatch);
-                commit('incrementTreasuresCount');
-                if (treasureToCatch.value > 0) {
-                    commit('addMoney', treasureToCatch.value);
-                }
-                commit('updateGoalProgress', { type: 'findTreasure', amount: 1 }); // Added
-                commit('updateUniqueTreasureGoal');
-            }
-            } else if (Math.random() < 0.2) { // Lower chance of trash
-            const trashItem = state.trashTypes[Math.floor(Math.random() * state.trashTypes.length)];
-            if (trashItem.energy) {
-                commit('setEnergy', state.energy + trashItem.energy);
-                commit('addMessage', { text: `¡Vaya! Encontraste ${trashItem.name} y te da +${trashItem.energy} de energía.`, type: 'catch' });
-            } else {
-                commit('addCaughtTrash', trashItem);
-                commit('incrementTrashCount');
-                commit('addMessage', { text: `¡Oh, no! Has pescado ${trashItem.name}.`, type: 'catch' });
-            }
-            } else {
-            if (Math.random() * boat.catchBonus < rod.catchRate) {
-                const availableFish = state.fishTypes.map(fish => {
-                if (fish.isExotic) {
-                    return { ...fish, rarity: fish.rarity * 2 }; // Double rarity for exotic fish
-                }
-                return fish;
-                }).filter(fish => {
-                    const meetsRequirements = !fish.requirements || (state.currentBoat >= fish.requirements.boat && state.currentRod >= fish.requirements.rod);
-                    const availableAtTime = fish.partOfDay.includes(state.currentPartOfDay);
-                    const inZone = fish.zone === state.currentZone;
-                    return meetsRequirements && availableAtTime && inZone;
-                }).map(fish => ({
-                    ...fish,
-                    rarity: getAdjustedRarity(fish) // Apply adjusted rarity
-                }));
-
+            if (availableFish.length > 0) {
                 const totalRarity = availableFish.reduce((sum, fish) => sum + fish.rarity, 0);
                 let random = Math.random() * totalRarity;
                 let fishToCatch = null;
@@ -698,14 +624,15 @@ const store = createStore({
                 }
 
                 if (fishToCatch) {
-                if (fishToCatch.value > 5000 || fishToCatch.isExotic) {
                     commit('setFishToCatch', fishToCatch);
                     commit('setFishFighting', true);
                     commit('setFishFightProgress', 0);
-                    // Taps required based on fish value/rarity, e.g., 10 taps for every 1000 value, min 5 taps
-                    const requiredTaps = Math.max(5, Math.floor(fishToCatch.value / 1000) * 2);
+                    
+                    const requiredTaps = 12;
+                    const timeToCatch = 2; // seconds
+
                     commit('setFishFightRequiredTaps', requiredTaps);
-                    commit('setFishFightTimer', 5); // 5 seconds for the mini-game
+                    commit('setFishFightTimer', timeToCatch);
                     commit('setFishFightActive', true);
                     commit('addMessage', { text: `¡Un pez enorme ha picado! ¡Toca repetidamente para no dejarlo escapar!`, type: 'warning' });
 
@@ -720,29 +647,17 @@ const store = createStore({
                                 dispatch('fightFish', { success: false }); // Fish escapes if time runs out
                             }
                         }
-                    }, 1000); // Update every second
+                    }, 1000);
                 } else {
-                    const value = Math.floor(fishToCatch.value * (state.isNight ? 1.5 : 1));
-                    commit('addMessage', { text: `¡Genial! Has atrapado un ${fishToCatch.name} con un valor de ${value}$.`, type: 'catch' });
-                    commit('updateFishingStats', { fish: fishToCatch, value });
-                    commit('addCaughtFish', { ...fishToCatch, value });
-                    if (fishToCatch.isExotic) {
-                        commit('incrementExoticFishCount');
-                    } else {
-                        commit('incrementCommonFishCount');
-                    }
-                    commit('addMoney', value);
-                }
-                } else {
-                    commit('addMessage', { text: 'Parece que hoy no pican...', type: 'system' });
+                    commit('addMessage', { text: 'No parece haber peces difíciles en esta zona.', type: 'system' });
                 }
             } else {
-                commit('addMessage', { text: '¡Rayos! El pez se ha escapado.', type: 'warning' });
+                commit('addMessage', { text: 'No parece haber peces difíciles en esta zona.', type: 'system' });
             }
-            }
+
             commit('setIsFishing', false);
             commit('setFishingDepth', null);
-        }, 2000 / boat.speedMultiplier);
+        }, 1000); // Shorter timeout for deep fishing
         },
         tapToFightFish({ commit, state, dispatch }) {
             if (!state.fishFightActive) return;

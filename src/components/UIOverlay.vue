@@ -24,6 +24,7 @@
     <div id="bottom-bar">
         <button class="btn-icon" @click="goToSleep" :disabled="!canSleep">🛏️<span class="btn-text">(${{ sleepCost }})</span></button>
         <button class="btn-icon" @click="toggleModal('recycle')">♻️</button>
+        <button class="btn-icon" @click="startDeepFishing">⚓</button>
         <button class="btn-icon" @click="toggleModal('market')">🛒</button>
         <button class="btn-icon" @click="openMap">🗺️</button>
         <button class="btn-icon" @click="toggleModal('settings')">⚙️</button>
@@ -102,6 +103,7 @@ export default {
         return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} - Día ${dayOfMonth} de ${monthName}`;
       }),
       goToSleep: () => store.dispatch('goToSleep'),
+      startDeepFishing: () => store.dispatch('startDeepFishing'),
       toggleModal: (modal) => store.dispatch('toggleModal', modal),
       openMap: () => store.dispatch('toggleModal', 'map'),
       getModals: computed(() => store.getters.getModals),
