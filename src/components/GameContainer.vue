@@ -10,6 +10,7 @@
     <InstructionsModal />
     <MapModal />
     <CreditsModal />
+    <SettingsModal />
     
     <Boat />
     <Storm />
@@ -31,6 +32,7 @@ import TreasuresModal from './TreasuresModal.vue';
 import InstructionsModal from './InstructionsModal.vue';
 import MapModal from './MapModal.vue';
 import CreditsModal from './CreditsModal.vue';
+import SettingsModal from './SettingsModal.vue';
 
 import EquipmentModal from './EquipmentModal.vue';
 import Boat from './Boat.vue';
@@ -49,6 +51,7 @@ export default {
     InstructionsModal,
     MapModal,
     CreditsModal,
+    SettingsModal,
     
     EquipmentModal,
     Boat,
