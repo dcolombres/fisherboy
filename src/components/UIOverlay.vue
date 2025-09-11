@@ -1,6 +1,6 @@
 <template>
   <div id="ui-overlay">
-    <div id="top-left-panel" :style="{ backgroundColor: black, borderColor: currentZoneColor }">
+    <div id="top-left-panel" :style="{ backgroundColor: currentZoneColor }">
       <div id="game-stats-line-1">
         <div class="stat-item">💰 {{ getMoney }}</div>
         <div class="stat-item">🐟 {{ getCommonFishCount }}</div>
@@ -22,14 +22,20 @@
 
     <MessageConsole />
     <div id="bottom-bar">
-        <button class="btn-icon" @click="goToSleep" :disabled="!canSleep">🛏️<span class="btn-text">${{ sleepCost }}</span></button>
+        <button class="btn-icon" @click="goToSleep" :disabled="!canSleep">🛏️<span class="btn-text">(${{ sleepCost }})</span></button>
         <button class="btn-icon" @click="toggleModal('recycle')">♻️</button>
         <button class="btn-icon" @click="toggleModal('market')">🛒</button>
         <button class="btn-icon" @click="openMap">🗺️</button>
         <button class="btn-icon" @click="toggleModal('settings')">⚙️</button>
     </div>
 
-    <SettingsModal />
+    <!-- Mobile controls will go here -->
+
+    <!-- Bottom bar will go here -->
+
+    <!-- Mobile controls will go here -->
+
+    <!-- Fish fight mini-game will go here -->
   </div>
 </template>
 
@@ -37,14 +43,12 @@
 import { computed, watchEffect } from 'vue';
 import { useStore } from 'vuex';
 import Weather from './Weather.vue';
-import SettingsModal from './SettingsModal.vue';
 import MessageConsole from './MessageConsole.vue';
 
 export default {
   name: 'UIOverlay',
   components: {
     Weather,
-    SettingsModal,
     MessageConsole,
   },
   setup() {
@@ -70,8 +74,6 @@ export default {
     watchEffect(() => {
       document.body.className = currentPartOfDay.value;
     });
-
-    
 
     const currentZone = computed(() => store.state.zones.find(z => z.id === store.state.currentZone));
     const currentZoneName = computed(() => currentZone.value ? currentZone.value.name : '');
@@ -105,41 +107,22 @@ export default {
       getModals: computed(() => store.getters.getModals),
       messages,
       canSleep,
-      
       currentDay,
       currentZoneName,
       currentZoneColor,
+      fishFighting: computed(() => store.state.fishFighting),
+      fishFightProgress: computed(() => store.state.fishFightProgress),
+      fishFightRequiredTaps: computed(() => store.state.fishFightRequiredTaps),
+      fishFightTimer: computed(() => store.state.fishFightTimer),
+      tapToFightFish: () => store.dispatch('tapToFightFish'),
+      moveBoat: (coords) => store.dispatch('moveBoat', coords),
     };
   },
 };
 </script>
 
 <style scoped>
-
-#bottom-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: space-around;
-    background: rgba(0, 0, 0, 0.8);
-    padding: 10px 0;
-    z-index: 100;
-}
-
-.btn-icon {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 2em;
-    cursor: pointer;
-}
-
-.btn-text {
-    font-size: 0.5em;
-    display: block;
-}
+/* CSS will go here */
 
 #top-left-panel {
   position: fixed;
@@ -207,7 +190,6 @@ export default {
   color: #ffd700;
 }
 
-
 .muelle-img {
   position: fixed;
   top: 50%;
@@ -216,5 +198,30 @@ export default {
   width: 300px; /* Adjust as needed */
   height: auto;
   z-index: 90; /* Below info panels (z-index 100) */
+}
+
+#bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-around;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 10px 0;
+    z-index: 100;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2em;
+    cursor: pointer;
+}
+
+.btn-text {
+    font-size: 0.5em;
+    display: block;
 }
 </style>

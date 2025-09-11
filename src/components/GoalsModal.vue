@@ -6,7 +6,7 @@
       <div class="goals-container">
         <div class="goal-category">
           <h3>Objetivos Actuales</h3>
-          <p v-if="currentGoals.length === 0" class="no-goals-message">No hay objetivos activos en este momento. ¡Sigue jugando para desbloquear más!</p>
+          <p v-if="currentGoals.length === 0" class="no-goals-message">No hay objetivos activos en este momento. ¡Sequí pescando para desbloquear más!</p>
           <div class="goals-grid">
             <div v-for="goal in currentGoals" :key="goal.id" class="goal">
               <div class="goal-description">{{ goal.description }}</div>
@@ -21,7 +21,7 @@
 
         <div class="goal-category completed-goals-section">
           <h3>Objetivos Completados</h3>
-          <p v-if="completedGoals.length === 0" class="no-goals-message">Aún no has completado ningún objetivo.</p>
+          <p v-if="completedGoals.length === 0" class="no-goals-message">Aún no completaste ningún objetivo.</p>
           <div class="goals-grid">
             <div v-for="goal in completedGoals" :key="goal.id" class="goal completed">
               <div class="goal-description">{{ goal.description }}</div>

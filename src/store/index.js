@@ -38,6 +38,10 @@ const initialState = {
     messages: [],
     fishFighting: false,
     fishToCatch: null,
+    fishFightProgress: 0,
+    fishFightRequiredTaps: 0,
+    fishFightTimer: 0,
+    fishFightActive: false,
     modals: {
     market: false,
     stats: false,
@@ -344,6 +348,11 @@ const store = createStore({
         setFishToCatch(state, fish) {
         state.fishToCatch = fish;
         },
+        setFishFightProgress(state, progress) { state.fishFightProgress = progress; },
+        setFishFightRequiredTaps(state, taps) { state.fishFightRequiredTaps = taps; },
+        setFishFightTimer(state, time) { state.fishFightTimer = time; },
+        setFishFightActive(state, active) { state.fishFightActive = active; },
+        incrementFishFightProgress(state) { state.fishFightProgress++; },
         unlockZone(state, zoneId) {
         const zone = state.zones.find(z => z.id === zoneId);
         if (zone) {
@@ -368,7 +377,7 @@ const store = createStore({
             dispatch('initializeGame');
         },
         initializeGame({ commit, dispatch }) {
-        commit('addMessage', { text: '¡Bienvenido a Fisherboy! Lanza tu caña y que comience la aventura.', type: 'system' });
+        commit('addMessage', { text: '¡Bienvenido a Fisherboy! Lanzá tu caña y que comience la aventura.', type: 'system' });
         // Add initial goals
         commit('addGoal', 'goal_catch_10_common_fish');
         commit('addGoal', 'goal_earn_500_money');
@@ -529,7 +538,26 @@ const store = createStore({
                 if (fishToCatch.value > 1000 || fishToCatch.isExotic) {
                     commit('setFishToCatch', fishToCatch);
                     commit('setFishFighting', true);
+                    commit('setFishFightProgress', 0);
+                    // Taps required based on fish value/rarity, e.g., 10 taps for every 1000 value, min 5 taps
+                    const requiredTaps = Math.max(5, Math.floor(fishToCatch.value / 1000) * 2);
+                    commit('setFishFightRequiredTaps', requiredTaps);
+                    commit('setFishFightTimer', 5); // 5 seconds for the mini-game
+                    commit('setFishFightActive', true);
                     commit('addMessage', { text: `¡Un pez enorme ha picado! ¡Toca repetidamente para no dejarlo escapar!`, type: 'warning' });
+
+                    // Start the mini-game timer
+                    let timer = state.fishFightTimer;
+                    const interval = setInterval(() => {
+                        timer--;
+                        commit('setFishFightTimer', timer);
+                        if (timer <= 0) {
+                            clearInterval(interval);
+                            if (state.fishFightProgress < state.fishFightRequiredTaps) {
+                                dispatch('fightFish', { success: false }); // Fish escapes if time runs out
+                            }
+                        }
+                    }, 1000); // Update every second
                 } else {
                     const value = Math.floor(fishToCatch.value * (state.isNight ? 1.5 : 1));
                     commit('addMessage', { text: `¡Genial! Has atrapado un ${fishToCatch.name} con un valor de ${value}$.`, type: 'catch' });
@@ -665,7 +693,26 @@ const store = createStore({
                 if (fishToCatch.value > 5000 || fishToCatch.isExotic) {
                     commit('setFishToCatch', fishToCatch);
                     commit('setFishFighting', true);
+                    commit('setFishFightProgress', 0);
+                    // Taps required based on fish value/rarity, e.g., 10 taps for every 1000 value, min 5 taps
+                    const requiredTaps = Math.max(5, Math.floor(fishToCatch.value / 1000) * 2);
+                    commit('setFishFightRequiredTaps', requiredTaps);
+                    commit('setFishFightTimer', 5); // 5 seconds for the mini-game
+                    commit('setFishFightActive', true);
                     commit('addMessage', { text: `¡Un pez enorme ha picado! ¡Toca repetidamente para no dejarlo escapar!`, type: 'warning' });
+
+                    // Start the mini-game timer
+                    let timer = state.fishFightTimer;
+                    const interval = setInterval(() => {
+                        timer--;
+                        commit('setFishFightTimer', timer);
+                        if (timer <= 0) {
+                            clearInterval(interval);
+                            if (state.fishFightProgress < state.fishFightRequiredTaps) {
+                                dispatch('fightFish', { success: false }); // Fish escapes if time runs out
+                            }
+                        }
+                    }, 1000); // Update every second
                 } else {
                     const value = Math.floor(fishToCatch.value * (state.isNight ? 1.5 : 1));
                     commit('addMessage', { text: `¡Genial! Has atrapado un ${fishToCatch.name} con un valor de ${value}$.`, type: 'catch' });
@@ -689,28 +736,44 @@ const store = createStore({
             commit('setFishingDepth', null);
         }, 2000 / boat.speedMultiplier);
         },
-        fightFish({ commit, state }) {
-        if (state.fishFighting) {
-            const fish = state.fishToCatch;
-            const value = Math.floor(fish.value * (state.isNight ? 1.5 : 1));
-            commit('addMessage', { text: `¡Lo lograste! Has atrapado un ${fish.name} con un valor de ${value}$.`, type: 'catch' });
-            commit('updateFishingStats', { fish, value });
-            commit('addCaughtFish', { ...fish, value });
-            if (fish.isExotic) {
-                commit('incrementExoticFishCount');
-                commit('updateGoalProgress', { type: 'catchExoticFish', amount: 1 });
-                // Check if it's a legendary fish
-                if (fish.rarity <= 0.005) { // Assuming rarity <= 0.005 means legendary
-                    commit('updateGoalProgress', { type: 'catchLegendaryFish', amount: 1 });
-                }
-            } else {
-                commit('incrementCommonFishCount');
-                commit('updateGoalProgress', { type: 'catchCommonFish', amount: 1 });
+        tapToFightFish({ commit, state, dispatch }) {
+            if (!state.fishFightActive) return;
+
+            commit('incrementFishFightProgress');
+
+            if (state.fishFightProgress >= state.fishFightRequiredTaps) {
+                dispatch('fightFish', { success: true });
             }
-            commit('addMoney', value);
+        },
+        fightFish({ commit, state }, { success }) {
+            commit('setFishFightActive', false); // Deactivate mini-game
+            commit('setFishFightProgress', 0);
+            commit('setFishFightRequiredTaps', 0);
+            commit('setFishFightTimer', 0); // Reset timer
+
+            if (success) {
+                const fish = state.fishToCatch;
+                const value = Math.floor(fish.value * (state.isNight ? 1.5 : 1));
+                commit('addMessage', { text: `¡Lo lograste! Has atrapado un ${fish.name} con un valor de ${value}$.`, type: 'catch' });
+                commit('updateFishingStats', { fish, value });
+                commit('addCaughtFish', { ...fish, value });
+                if (fish.isExotic) {
+                    commit('incrementExoticFishCount');
+                    commit('updateGoalProgress', { type: 'catchExoticFish', amount: 1 });
+                    // Check if it's a legendary fish
+                    if (fish.rarity <= 0.005) { // Assuming rarity <= 0.005 means legendary
+                        commit('updateGoalProgress', { type: 'catchLegendaryFish', amount: 1 });
+                    }
+                } else {
+                    commit('incrementCommonFishCount');
+                    commit('updateGoalProgress', { type: 'catchCommonFish', amount: 1 });
+                }
+                commit('addMoney', value);
+            } else {
+                commit('addMessage', { text: `¡El ${state.fishToCatch.name} se ha escapado!`, type: 'warning' });
+            }
             commit('setFishFighting', false);
             commit('setFishToCatch', null);
-        }
         },
         sellAllFish({ commit, state, dispatch }) {
         if (state.caughtFishInventory.length === 0) {
@@ -734,7 +797,7 @@ const store = createStore({
             if (state.money >= rod.price) {
                 commit('spendMoney', rod.price);
                 commit('unlockRod', rodIndex);
-                commit('addMessage', { text: `¡Excelente compra! Has adquirido la ${rod.name}.`, type: 'achievement' });
+                commit('addMessage', { text: `¡Excelente! Compraste la ${rod.name}.`, type: 'achievement' });
                 commit('updateGoalProgress', { type: 'buyRod', amount: 1, id: rodIndex });
             }
         },
@@ -743,7 +806,7 @@ const store = createStore({
             if (state.money >= boat.price) {
                 commit('spendMoney', boat.price);
                 commit('unlockBoat', boatIndex);
-                commit('addMessage', { text: `¡Excelente compra! Has adquirido el ${boat.name}.`, type: 'achievement' });
+                commit('addMessage', { text: `¡Excelente! Compraste  el ${boat.name}.`, type: 'achievement' });
                 commit('updateGoalProgress', { type: 'buyBoat', amount: 1, id: boatIndex });
             }
         },
@@ -764,7 +827,7 @@ const store = createStore({
             if (!goal.completed && goal.current >= goal.target) {
             commit('completeGoal', goal.id); // Pass only the ID
             commit('addMoney', goal.reward);
-            commit('addMessage', { text: `¡Felicidades! Has completado el objetivo: "${goal.description}" y ganas ${goal.reward}$.`, type: 'achievement' });
+            commit('addMessage', { text: `¡Felicidades! Complestaste el objetivo: "${goal.description}" y ganas ${goal.reward}$.`, type: 'achievement' });
             }
         }
         },
@@ -775,7 +838,7 @@ const store = createStore({
             newInventory.splice(index, 1);
             commit('setCaughtTrashInventory', newInventory);
             commit('recycle', { count: 1, value: item.recycleValue });
-            commit('addMessage', { text: `Has reciclado ${item.name} y has ganado ${item.recycleValue}$.`, type: 'system' });
+            commit('addMessage', { text: `Reciclaste ${item.name} y ganaste ${item.recycleValue}$.`, type: 'system' });
             commit('updateGoalProgress', { type: 'recycleItems', amount: 1 });
         },
         recycleAllTrash({ commit, state, dispatch }) {
@@ -785,7 +848,7 @@ const store = createStore({
                 commit('addMoney', totalValue);
                 commit('recycle', { count: itemCount, value: totalValue });
                 commit('setCaughtTrashInventory', []);
-                commit('addMessage', { text: `Has reciclado toda la basura y has ganado ${totalValue}$.`, type: 'system' });
+                commit('addMessage', { text: `Reciclaste toda la basura y ganaste ${totalValue}$.`, type: 'system' });
                 commit('updateGoalProgress', { type: 'recycleItems', amount: itemCount });
             }
         },
@@ -805,9 +868,9 @@ const store = createStore({
                     commit('setGameTime', newTime);
                 }
                 dispatch('updateClimate');
-                commit('addMessage', { text: `Descansas y recuperas tus fuerzas. El costo del descanso es de ${sleepCost}$.`, type: 'system' });
+                commit('addMessage', { text: `Descansás y recuperás tus fuerzas. El costo del descanso es de ${sleepCost}$.`, type: 'system' });
             } else {
-                commit('addMessage', { text: `No tienes suficiente dinero para descansar. Necesitas ${sleepCost}$.`, type: 'warning' });
+                commit('addMessage', { text: `No tenés suficiente dinero para descansar. Necesitás ${sleepCost}$.`, type: 'warning' });
             }
         },
         toggleModal({ commit }, modal) {
@@ -818,7 +881,7 @@ const store = createStore({
         if (zone && !zone.unlocked && state.money >= zone.cost) {
             commit('spendMoney', zone.cost);
             commit('unlockZone', zoneId);
-            commit('addMessage', { text: `¡Nueva zona desbloqueada! Ahora puedes pescar en ${zone.name}.`, type: 'achievement' });
+            commit('addMessage', { text: `¡Nueva zona desbloqueada! Ahora podés pescar en ${zone.name}.`, type: 'achievement' });
         }
         },
         travelToZone({ commit }, zoneId) {
