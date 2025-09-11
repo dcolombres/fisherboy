@@ -1,5 +1,5 @@
 <template>
-  <div id="gameContainer" @mousedown="handleMouseDown" @mouseup="handleMouseUp" @touchstart="handleTouchStart" @touchend="handleTouchEnd">
+  <div id="gameContainer" @touchstart="handleTouchStart" @touchend="handleTouchEnd">
     <UIOverlay />
     <MarketModal />
     <StatsModal />
@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import { computed, onMounted, reactive, toRefs } from 'vue';
+import { computed, onMounted, reactive } from 'vue';
 import { useStore } from 'vuex';
 
 // Importar componentes hijos
@@ -60,41 +60,57 @@ export default {
   },
   setup() {
     const store = useStore();
-    let pressTimer = null;
+    const touchState = reactive({
+      touchStartX: 0,
+      touchStartY: 0,
+      touchEndX: 0,
+      touchEndY: 0,
+    });
 
     const fishFighting = computed(() => store.getters.getFishFighting);
 
-    const handleMouseDown = () => {
-      if (fishFighting.value) {
-        store.dispatch('fightFish');
-      } else {
-        pressTimer = setTimeout(() => {
-          store.dispatch('startDeepFishing');
-        }, 1000);
+    const handleGesture = () => {
+      const deltaX = touchState.touchEndX - touchState.touchStartX;
+      const deltaY = touchState.touchEndY - touchState.touchStartY;
+      const swipeThreshold = 30; // pixels
+
+      if (Math.abs(deltaX) > Math.abs(deltaY)) { // Horizontal swipe
+        if (Math.abs(deltaX) > swipeThreshold) {
+          if (deltaX > 0) {
+            store.dispatch('moveBoat', { x: 1 });
+          } else {
+            store.dispatch('moveBoat', { x: -1 });
+          }
+        }
+      } else { // Vertical swipe
+        if (Math.abs(deltaY) > swipeThreshold) {
+          if (deltaY > 0) {
+            store.dispatch('moveBoat', { y: 1 });
+          } else {
+            store.dispatch('moveBoat', { y: -1 });
+          }
+        }
+      }
+
+      // If it's not a swipe, it's a tap
+      if (Math.abs(deltaX) < swipeThreshold && Math.abs(deltaY) < swipeThreshold) {
+        if (fishFighting.value) {
+          store.dispatch('tapToFightFish');
+        } else {
+          store.dispatch('startFishing');
+        }
       }
     };
 
-    const handleMouseUp = () => {
-      clearTimeout(pressTimer);
+    const handleTouchStart = (e) => {
+      touchState.touchStartX = e.touches[0].clientX;
+      touchState.touchStartY = e.touches[0].clientY;
     };
 
-    const handleTouchStart = () => {
-      if (fishFighting.value) {
-        store.dispatch('fightFish');
-      } else {
-        pressTimer = setTimeout(() => {
-          store.dispatch('startDeepFishing');
-        }, 1000);
-      }
-    };
-
-    const handleTouchEnd = () => {
-      clearTimeout(pressTimer);
-    };
-
-    const startFishing = () => {
-      if (store.state.isFishing) return;
-      store.dispatch('startFishing');
+    const handleTouchEnd = (e) => {
+      touchState.touchEndX = e.changedTouches[0].clientX;
+      touchState.touchEndY = e.changedTouches[0].clientY;
+      handleGesture();
     };
 
     // Ciclo de vida
@@ -109,11 +125,8 @@ export default {
     });
 
     return {
-      handleMouseDown,
-      handleMouseUp,
       handleTouchStart,
       handleTouchEnd,
-      startFishing,
     };
   },
 };

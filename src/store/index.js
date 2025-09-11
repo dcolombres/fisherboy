@@ -159,6 +159,10 @@ const initialState = {
     { name: "Bebida Energizante", recycleValue: 10, energy: 20 },
     { name: "Café", recycleValue: 5, energy: 10 },
     ],
+    energyItems: [
+      { name: "Café", price: 50, energy: 10 },
+      { name: "Bebida Energizante", price: 150, energy: 20 },
+    ],
     fishTypes: [
     // Zone 1: Lago Clemente
     { name: "Sardina", value: 58, color: "silver", speed: 1, rarity: 0.4, isExotic: false, partOfDay: ['dawn', 'noon', 'afternoon', 'night'], zone: 1, seasonalBonus: { summer: 1.5, autumn: 1.2 }, temperatureRange: [15, 30] },
@@ -256,6 +260,9 @@ const store = createStore({
         setMoney(state, amount) { state.money = amount; },
         addMoney(state, amount) { state.money += amount; },
         spendMoney(state, amount) { state.money -= amount; },
+        addEnergy(state, amount) {
+          state.energy = Math.min(100, state.energy + amount);
+        },
         setEnergy(state, amount) { state.energy = amount; },
         setGameTime(state, time) { state.gameTime = time; },
         setCurrentDay(state, day) { state.currentDay = day; },
@@ -377,6 +384,7 @@ const store = createStore({
             dispatch('initializeGame');
         },
         initializeGame({ commit, dispatch }) {
+        commit('toggleModal', 'instructions');
         commit('addMessage', { text: '¡Bienvenido a Fisherboy! Lanzá tu caña y que comience la aventura.', type: 'system' });
         // Add initial goals
         commit('addGoal', 'goal_catch_10_common_fish');
@@ -809,6 +817,15 @@ const store = createStore({
                 commit('addMessage', { text: `¡Excelente! Compraste  el ${boat.name}.`, type: 'achievement' });
                 commit('updateGoalProgress', { type: 'buyBoat', amount: 1, id: boatIndex });
             }
+        },
+        buyEnergyItem({ commit, state }, item) {
+          if (state.money >= item.price) {
+            commit('spendMoney', item.price);
+            commit('addEnergy', item.energy);
+            commit('addMessage', { text: `Compraste ${item.name} y recuperaste ${item.energy} de energía.`, type: 'system' });
+          } else {
+            commit('addMessage', { text: `No tienes suficiente dinero para comprar ${item.name}.`, type: 'warning' });
+          }
         },
         selectRod({ commit, state }, rodIndex) {
             if (state.unlockedRods[rodIndex]) {

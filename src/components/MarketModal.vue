@@ -5,6 +5,21 @@
       <h2>Mercado del Pescador</h2>
       <div class="market-equipment">
         <div class="equipment-category">
+          <h3>Vender Pescado</h3>
+          <div class="equipment-items">
+            <div class="equipment-item">
+              <div class="equipment-info">
+                <div class="equipment-name">Pescado en el inventario</div>
+                <div class="equipment-stats">Valor total: ${{ totalFishValue }}</div>
+              </div>
+              <button class="btn btn-primary" @click="sellAllFish" :disabled="caughtFishInventory.length === 0">
+                Vender Todo
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="equipment-category">
           <h3>Cañas de Pescar</h3>
           <div class="equipment-items">
             <div v-for="(rod, index) in fishingRods" :key="index" class="equipment-item" :class="{ selected: index === currentRod }">
@@ -45,6 +60,24 @@
             </div>
           </div>
         </div>
+
+        <div class="equipment-category">
+          <h3>Consumibles</h3>
+          <div class="equipment-items">
+            <div v-for="(item, index) in energyItems" :key="index" class="equipment-item">
+              <div class="equipment-info">
+                <div class="equipment-name">{{ item.name }}</div>
+                <div class="equipment-stats">Energía: +{{ item.energy }}</div>
+              </div>
+              <div>
+                <span class="equipment-price">${{ item.price }}</span>
+                <button class="btn btn-primary" @click="buyEnergyItem(item)" :disabled="money < item.price">
+                  Comprar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -60,6 +93,8 @@ export default {
     const store = useStore();
     const show = computed(() => store.state.modals.market);
     const close = () => store.dispatch('toggleModal', 'market');
+    const caughtFishInventory = computed(() => store.state.caughtFishInventory);
+    const totalFishValue = computed(() => caughtFishInventory.value.reduce((sum, fish) => sum + fish.value, 0));
 
     return {
       show,
@@ -71,10 +106,15 @@ export default {
       unlockedBoats: computed(() => store.state.unlockedBoats),
       currentRod: computed(() => store.state.currentRod),
       currentBoat: computed(() => store.state.currentBoat),
+      energyItems: computed(() => store.state.energyItems),
+      caughtFishInventory,
+      totalFishValue,
       buyRod: (index) => store.dispatch('buyRod', index),
       buyBoat: (index) => store.dispatch('buyBoat', index),
+      buyEnergyItem: (item) => store.dispatch('buyEnergyItem', item),
       selectRod: (index) => store.dispatch('selectRod', index),
       selectBoat: (index) => store.dispatch('selectBoat', index),
+      sellAllFish: () => store.dispatch('sellAllFish'),
     };
   },
 };
