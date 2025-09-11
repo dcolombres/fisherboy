@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">fisherboy-vue</string>
+    <string name="title_activity_main">fisherboy-vue</string>
+    <string name="package_name">com.dcolombres.fisherboy</string>
+    <string name="custom_url_scheme">com.dcolombres.fisherboy</string>
+</resources>
