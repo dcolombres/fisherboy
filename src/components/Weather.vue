@@ -1,6 +1,6 @@
 <template>
   <div class="weather-display">
-    <p>Día {{ currentDay }} - {{ seasonIcon }}, {{ temperature }}°C</p>
+    <p>Día {{ currentDay }} {{ seasonIcon }} {{ temperature }}°C</p>
   </div>
 </template>
 
@@ -46,7 +46,7 @@ export default {
   align-items: center;
   background-color: rgba(0, 0, 0, 0.5);
   color: white;
-  padding: 5px 15px;
+  padding: 5px 5px;
   border-radius: 10px;
   font-family: 'Arial', sans-serif;
 }

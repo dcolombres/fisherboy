@@ -9,6 +9,7 @@
     <EquipmentModal />
     <InstructionsModal />
     <MapModal />
+    <CreditsModal />
     
     <Boat />
     <Storm />
@@ -29,6 +30,7 @@ import RecycleModal from './RecycleModal.vue';
 import TreasuresModal from './TreasuresModal.vue';
 import InstructionsModal from './InstructionsModal.vue';
 import MapModal from './MapModal.vue';
+import CreditsModal from './CreditsModal.vue';
 
 import EquipmentModal from './EquipmentModal.vue';
 import Boat from './Boat.vue';
@@ -46,6 +48,7 @@ export default {
     TreasuresModal,
     InstructionsModal,
     MapModal,
+    CreditsModal,
     
     EquipmentModal,
     Boat,

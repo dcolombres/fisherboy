@@ -1,6 +1,6 @@
 <template>
   <div id="ui-overlay">
-    <div id="top-left-panel">
+    <div id="top-left-panel" :style="{ backgroundColor: black, borderColor: currentZoneColor }">
       <div id="game-stats-line-1">
         <div class="stat-item">💰 {{ getMoney }}</div>
         <div class="stat-item">🐟 {{ getCommonFishCount }}</div>
@@ -9,7 +9,7 @@
         <div class="stat-item">💎 {{ getTreasuresCount }}</div>
       </div>
       <div id="game-stats-line-2">
-        
+        <div class="stat-item">📍 {{ currentZoneName }}</div>
         <div class="stat-item">{{ formattedTime }}</div>
         <Weather />
         <div id="energy-bar" :class="energyColorClass">
@@ -20,17 +20,13 @@
 
     <img src="/src/img/muelle.svg" alt="Muelle" class="muelle-img" />
 
-    
     <MessageConsole />
     <div id="bottom-bar">
-        <button class="btn-icon" @click="goToSleep" :disabled="!canSleep">🛏️<span class="btn-text">(${{ sleepCost }})</span></button>
+        <button class="btn-icon" @click="goToSleep" :disabled="!canSleep">🛏️<span class="btn-text">${{ sleepCost }}</span></button>
         <button class="btn-icon" @click="toggleModal('recycle')">♻️</button>
         <button class="btn-icon" @click="toggleModal('market')">🛒</button>
-    </div>
-
-    <div id="bottom-right-buttons">
-        <button class="map-btn" @click="openMap">🗺️</button>
-        <button class="settings-btn" @click="toggleModal('settings')">⚙️</button>
+        <button class="btn-icon" @click="openMap">🗺️</button>
+        <button class="btn-icon" @click="toggleModal('settings')">⚙️</button>
     </div>
 
     <SettingsModal />
@@ -77,6 +73,10 @@ export default {
 
     
 
+    const currentZone = computed(() => store.state.zones.find(z => z.id === store.state.currentZone));
+    const currentZoneName = computed(() => currentZone.value ? currentZone.value.name : '');
+    const currentZoneColor = computed(() => currentZone.value ? currentZone.value.color : 'rgba(0, 0, 0, 0.7)');
+
     return {
       getMoney: computed(() => store.getters.getMoney),
       getCommonFishCount: computed(() => store.getters.getCommonFishCount),
@@ -91,7 +91,13 @@ export default {
         let hours = Math.floor(totalMinutes / 60) % 24;
         let minutes = totalMinutes % 60;
 
-        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+        const gameDay = store.state.currentDay;
+        const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        const monthIndex = (gameDay - 1) % 12;
+        const dayOfMonth = Math.floor((gameDay - 1) / 12) + 1;
+        const monthName = months[monthIndex];
+
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} - Día ${dayOfMonth} de ${monthName}`;
       }),
       goToSleep: () => store.dispatch('goToSleep'),
       toggleModal: (modal) => store.dispatch('toggleModal', modal),
@@ -101,38 +107,14 @@ export default {
       canSleep,
       
       currentDay,
+      currentZoneName,
+      currentZoneColor,
     };
   },
 };
 </script>
 
 <style scoped>
-
-
-#bottom-right-buttons {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 101;
-  display: flex;
-  gap: 10px; /* Space between buttons */
-}
-
-.settings-btn, .map-btn {
-  background-color: #2c3e50;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  font-size: 1.5em;
-  cursor: pointer;
-  border-radius: 5px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-  transition: background-color 0.3s ease;
-}
-
-.settings-btn:hover, .map-btn:hover {
-  background-color: #3a506b;
-}
 
 #bottom-bar {
     position: fixed;
@@ -161,19 +143,19 @@ export default {
 
 #top-left-panel {
   position: fixed;
-  top: 10px; /* Adjust top position */
-  left: 10px; /* Adjust left position */
+  top: 0;
+  left: 0;
   background: rgba(0, 0, 0, 0.7);
   color: white;
-  padding: 10px; /* Adjust padding */
-  border-radius: 12px;
-  width: calc(100% - 20px); /* Full width minus padding */
-  max-width: 500px; /* Max width for larger screens */
+  padding: 0;
+  border-radius: 0;
+  width: 100%;
+  /* max-width: 500px; */
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   z-index: 100;
-  display: flex; /* Use flexbox for overall layout */
-  flex-direction: column; /* Stack content vertically */
-  align-items: center; /* Center content horizontally */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 #game-stats-line-1,
@@ -218,11 +200,13 @@ export default {
   background-color: #ff1201;
 }
 
-
-
-#right-buttons-container {
-    display: none;
+#current-zone {
+  margin-top: 10px;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #ffd700;
 }
+
 
 .muelle-img {
   position: fixed;

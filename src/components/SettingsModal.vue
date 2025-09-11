@@ -4,10 +4,13 @@
       <span class="close" @click="close">&times;</span>
       <h2>Configuración</h2>
       <div class="settings-buttons">
-        <button class="btn btn-primary" @click="openModal('instructions')">Instrucciones</button>
-        <button class="btn btn-primary" @click="openModal('goals')">Objetivos</button>
-        <button class="btn btn-primary" @click="openModal('treasures')">Tesoros</button>
-        <button class="btn btn-primary" @click="openModal('stats')">Estadísticas</button>
+        <button class="settings-btn" @click="openModal('instructions')">Instrucciones</button>
+        <button class="settings-btn" @click="openModal('goals')">Objetivos</button>
+        <button class="settings-btn" @click="openModal('treasures')">Tesoros</button>
+        <button class="settings-btn" @click="openModal('stats')">Estadísticas</button>
+        <button class="btn-restart" @click="restartGame">Reiniciar Juego</button>
+        <button class="btn-credits" @click="openModal('credits')">Créditos</button>
+        <button class="btn-github" @click="openGithub">GitHub</button>
       </div>
     </div>
   </div>
@@ -29,10 +32,23 @@ export default {
       close();
     };
 
+    const restartGame = () => {
+      if (confirm('¿Estás seguro de que quieres reiniciar el juego? Todo tu progreso se perderá.')) {
+        store.dispatch('restartGame');
+        close();
+      }
+    };
+
+    const openGithub = () => {
+      window.open('https://github.com/Moro-AR/fisherBOY', '_blank');
+    };
+
     return {
       show,
       close,
       openModal,
+      restartGame,
+      openGithub,
     };
   },
 };
@@ -82,12 +98,79 @@ export default {
 h2 {
   text-align: center;
   margin-bottom: 20px;
+  color: #ffd700;
 }
 
 .settings-buttons {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 15px;
+}
+
+.settings-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 15px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 1.1em;
+}
+
+.settings-btn:hover {
+  background-color: #45a049;
+}
+
+.btn-restart {
+  grid-column: 1 / -1;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 15px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 1.1em;
+  margin-top: 15px;
+}
+
+.btn-restart:hover {
+  background-color: #c0392b;
+}
+
+.btn-credits {
+  grid-column: 1 / -1;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 15px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 1.1em;
+  margin-top: 15px;
+}
+
+.btn-credits:hover {
+  background-color: #2980b9;
+}
+
+.btn-github {
+  grid-column: 1 / -1;
+  background-color: #000000;
+  color: white;
+  border: none;
+  padding: 15px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 1.1em;
+  margin-top: 15px;
+}
+
+.btn-github:hover {
+  background-color: #333333;
 }
 
 @media (max-width: 768px) {
