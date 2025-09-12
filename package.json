@@ -16,6 +16,7 @@
     "vuex": "^4.1.0"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^7.4.3",
     "@vitejs/plugin-vue": "^4.0.0",
     "gh-pages": "^6.3.0",

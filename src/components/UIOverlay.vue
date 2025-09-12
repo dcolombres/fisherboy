@@ -1,14 +1,13 @@
 <template>
   <div id="ui-overlay">
     <div id="top-left-panel" :style="{ backgroundColor: currentZoneColor }">
-      <div id="game-stats-line-1">
+      <div class="stats-container">
+        <img src="/src/img/fisherboy.svg" alt="Fisherboy Logo" class="game-logo" />
         <div class="stat-item">💰 {{ getMoney }}</div>
         <div class="stat-item">🐟 {{ getCommonFishCount }}</div>
         <div class="stat-item">✨ {{ getExoticFishCount }}</div>
         <div class="stat-item">🗑️ {{ getTrashCount }}</div>
         <div class="stat-item">💎 {{ getTreasuresCount }}</div>
-      </div>
-      <div id="game-stats-line-2">
         <div class="stat-item">📍 {{ currentZoneName }}</div>
         <div class="stat-item">{{ formattedTime }}</div>
         <Weather />
@@ -22,12 +21,12 @@
 
     <MessageConsole />
     <div id="bottom-bar">
-        <button class="btn-icon" @click="goToSleep" :disabled="!canSleep">🛏️<span class="btn-text">(${{ sleepCost }})</span></button>
-        <button class="btn-icon" @click="toggleModal('recycle')">♻️</button>
-        <button class="btn-icon" @click="startDeepFishing">⚓</button>
-        <button class="btn-icon" @click="toggleModal('market')">🛒</button>
-        <button class="btn-icon" @click="openMap">🗺️</button>
-        <button class="btn-icon" @click="toggleModal('settings')">⚙️</button>
+        <button class="btn-icon" @click="goToSleep" :disabled="!canSleep">🛏️<span class="btn-label">Descansar</span><span class="btn-text">(${{ sleepCost }})</span></button>
+        <button class="btn-icon" @click="toggleModal('recycle')">♻️<span class="btn-label">Reciclar</span></button>
+        <button class="btn-icon" @click="startDeepFishing">⚓<span class="btn-label">Pesca Profunda</span></button>
+        <button class="btn-icon" @click="toggleModal('market')">🛒<span class="btn-label">Mercado</span></button>
+        <button class="btn-icon" @click="openMap">🗺️<span class="btn-label">Mapa</span></button>
+        <button class="btn-icon" @click="toggleModal('settings')">⚙️<span class="btn-label">Ajustes</span></button>
     </div>
 
     <!-- Mobile controls will go here -->
@@ -130,33 +129,33 @@ export default {
   position: fixed;
   top: 0;
   left: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.75);
   color: white;
-  padding: 0;
-  border-radius: 0;
   width: 100%;
-  /* max-width: 500px; */
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   z-index: 100;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  padding: 5px 0;
 }
 
-#game-stats-line-1,
-#game-stats-line-2 {
+.stats-container {
   display: flex;
-  justify-content: space-around; /* Distribute items evenly */
-  width: 100%;
-  margin-bottom: 5px; /* Small margin between lines */
   align-items: center;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 0 10px;
+}
+
+.game-logo {
+  height: 30px;
+  margin-right: 15px;
 }
 
 .stat-item {
-  font-size: 1.1em; /* Adjust font size */
+  font-size: 0.9em;
   display: flex;
   align-items: center;
-  gap: 5px; /* Space between icon and text */
+  gap: 5px;
+  margin-right: 15px;
 }
 
 #energy-bar {
@@ -209,17 +208,36 @@ export default {
     right: 0;
     display: flex;
     justify-content: space-around;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.85);
     padding: 10px 0;
     z-index: 100;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .btn-icon {
-    background: none;
-    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     color: white;
-    font-size: 2em;
+    font-size: 1.8em;
     cursor: pointer;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-icon:active {
+    transform: scale(0.9);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-label {
+    font-size: 0.4em;
+    margin-top: 5px;
 }
 
 .btn-text {
